@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { VIEW_H, VIEW_W } from "./config";
+import { initEditor } from "./editor/editor";
 import { BootScene } from "./scenes/BootScene";
 import { GameScene } from "./scenes/GameScene";
 import { HudScene } from "./scenes/HudScene";
@@ -15,6 +16,8 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [BootScene, GameScene, HudScene],
 });
+
+initEditor(game);
 
 // Dev-only handle for debugging from the browser console (and for agents driving a browser).
 if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;

@@ -1,5 +1,7 @@
 import Phaser from "phaser";
 import { TILE } from "../config";
+import { SMOKE_COLORS, SPRITE_KEYS } from "../data/sprites";
+import { store } from "../data/store";
 
 // Loads the Kenney sprites and generates the few textures we draw in code.
 export class BootScene extends Phaser.Scene {
@@ -10,14 +12,8 @@ export class BootScene extends Phaser.Scene {
   preload() {
     this.load.setPath("assets/");
     this.load.spritesheet("tiles", "tiles.png", { frameWidth: TILE, frameHeight: TILE });
-    for (const key of [
-      "player", "rifleman", "grenadier", "pow", "tank", "tank_barrel", "bunker_barrel",
-      "sandbag", "tree_large", "tree_small", "barrel_red", "tracks", "scorch",
-      "bullet_player", "bullet_enemy", "shell",
-    ]) {
-      this.load.image(key, `${key}.png`);
-    }
-    for (const color of ["orange", "grey", "white", "yellow"]) {
+    for (const key of SPRITE_KEYS) this.load.image(key, `${key}.png`);
+    for (const color of SMOKE_COLORS) {
       for (let i = 0; i < 6; i++) this.load.image(`smoke_${color}${i}`, `smoke_${color}${i}.png`);
     }
   }
@@ -38,7 +34,21 @@ export class BootScene extends Phaser.Scene {
     g.generateTexture("grenade_box", 32, 32);
     g.destroy();
 
-    this.scene.start("game");
+    this.startWhenDataIsReady();
+  }
+
+  // The level and enemy definitions come from data/*.toml through the dev server.
+  private startWhenDataIsReady() {
+    const failed = (lines: string[]) => {
+      this.add.text(24, 24, ["Cannot start: the data files are not valid.", "", ...lines, "", "Fix them (the editor panel, or any text editor) and the game starts by itself."].join("\n"), {
+        fontFamily: "Menlo, monospace", fontSize: "16px", color: "#ffb0a0", wordWrap: { width: 960 },
+      });
+      const off = store.on(({ worldChanged }) => { if (worldChanged) { off(); this.scene.start("game"); } });
+    };
+    store.refresh(true).then(
+      () => (store.world ? this.scene.start("game") : failed(store.errors)),
+      (e: Error) => failed([e.message]),
+    );
   }
 
   // Copy of the tilesheet with every tile's edge pixels repeated 1px outwards,

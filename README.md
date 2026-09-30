@@ -16,11 +16,28 @@ Controls: **WASD** move · **mouse** aim · **click** fire · **Space / right-cl
 
 Rescue the POWs, reach the top. Bunkers and tanks shrug off bullets: use grenades, or a nearby red barrel.
 
+## This branch: phase 2, data + editor
+
+The level and the enemies are TOML files in `data/`, and the page has an editor next to the game.
+
+- **Edit the map:** pick *Terrain* or *Units*, choose from the palette, click or drag on the map. Shift-drag fills a rectangle,
+  right-click picks what is under the cursor, undo/redo with ⌘Z / ⇧⌘Z. Click a row number to choose where *Play from row* starts.
+  The blue frame on the map is what the game is showing; the yellow dot is the player.
+- **Edit the enemies:** the *Enemies* tab has a form for every type: stats, one movement primitive, one attack primitive.
+  *Clone as new type* makes a new one (say a faster sniper) without touching code.
+- **Save** (⌘S) writes `data/levels/<name>.toml` / `data/enemies.toml` and the game reloads. Files changed by anything else
+  (a text editor, a coding agent) reload the same way; if the file is invalid the game keeps running the last good version and
+  the panel shows what is wrong. `pnpm check:data` validates the files from the command line.
+- **Levels:** the dropdown switches level (`?level=name` in the URL); *New…* creates a blank one.
+- **Dev only:** the editor and the file API are part of `pnpm dev`; `pnpm build` produces a game that cannot load levels.
+
+File formats are documented at the top of each data file and in `AGENTS.md`.
+
 ## Workshop phases
 
-1. **Hard-coded** — the level is a text grid in `src/level.ts`, behaviours are code. Add features and effects.
-2. **Data + editor** — move the level (and enemy definitions) to TOML files and build a level editor with hot reload.
-3. **Agent in the editor** — the editor calls a headless coding agent to edit the level on request.
+1. **Hard-coded** (`main`, tag `phase-1-start`): the level is a text grid in `src/level.ts`, behaviours are code. Add features and effects.
+2. **Data + editor** (`phase-2`, this branch): the level and the enemy definitions move to TOML files, with a level editor and hot reload.
+3. **Agent in the editor** (`phase-3`): the editor calls a headless coding agent to edit the level on request.
 
 ## Credits
 

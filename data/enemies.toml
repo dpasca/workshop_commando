@@ -1,0 +1,167 @@
+# Enemy types. One [types.xx] table per unit code used in the level's units grid.
+# Each type is a few numbers plus one movement primitive and one attack primitive.
+# Distances are in tiles, times in seconds, speeds in tiles per second.
+#
+#   move.kind    static | chase | keep_distance | patrol | follow_road
+#   attack.kind  none | aimed | lob | arc
+#
+# The primitives are implemented in src/entities/behaviors.ts. Inventing a new behaviour needs code;
+# inventing a new enemy from the existing ones only needs an entry here.
+# The editor rewrites this file on save, so comments are lost; keep notes in the "name" field.
+
+[types.s1]
+name = "rifleman"
+sprite = "rifleman"
+scale = 1
+hp = 1
+speed = 1.1
+score = 100
+armored = false
+footprint = [ 1, 1 ]
+facing = "player"
+death = "soldier"
+shadow = 0.75
+
+[types.s1.move]
+kind = "chase"
+stop_distance = 4
+strafe = true
+
+[types.s1.attack]
+kind = "aimed"
+interval = 2
+range = 8
+bullet_speed = 4.4
+projectile = "bullet"
+muzzle = 0.5
+
+[types.s2]
+name = "grenadier: keeps its distance and lobs grenades over cover"
+sprite = "grenadier"
+tint = "#d8c090"
+scale = 1
+hp = 2
+speed = 0.9
+score = 200
+armored = false
+footprint = [ 1, 1 ]
+facing = "player"
+death = "soldier"
+shadow = 0.75
+
+[types.s2.move]
+kind = "keep_distance"
+min = 5
+max = 7
+
+[types.s2.attack]
+kind = "lob"
+interval = 3.5
+range = 8
+inaccuracy = 0.5
+
+[types.s3]
+name = "sniper: never moves, long range, slow to fire, fast bullets"
+sprite = "rifleman"
+tint = "#4a5a6a"
+scale = 1
+hp = 1
+speed = 0
+score = 300
+armored = false
+footprint = [ 1, 1 ]
+facing = "player"
+death = "soldier"
+shadow = 0.75
+
+[types.s3.move]
+kind = "static"
+
+[types.s3.attack]
+kind = "aimed"
+interval = 3.5
+range = 12
+bullet_speed = 7.5
+projectile = "bullet"
+muzzle = 0.5
+
+[types.s4]
+name = "guard: paces left and right"
+sprite = "guard"
+scale = 1
+hp = 2
+speed = 1
+score = 200
+armored = false
+footprint = [ 1, 1 ]
+facing = "player"
+death = "soldier"
+shadow = 0.75
+
+[types.s4.move]
+kind = "patrol"
+axis = "x"
+distance = 3
+
+[types.s4.attack]
+kind = "aimed"
+interval = 1.6
+range = 7
+bullet_speed = 4.4
+projectile = "bullet"
+muzzle = 0.5
+
+[types.t1]
+name = "tank: drives down the road, armoured, fires shells"
+sprite = "tank"
+scale = 1.5
+hp = 8
+speed = 0.6
+score = 1000
+armored = true
+footprint = [ 2, 2 ]
+facing = "travel"
+turret = "tank_barrel"
+death = "tank"
+shadow = 2.2
+
+[types.t1.move]
+kind = "follow_road"
+stop_distance = 3
+
+[types.t1.attack]
+kind = "aimed"
+interval = 4
+range = 10
+bullet_speed = 3.1
+projectile = "shell"
+muzzle = 1.1
+
+[types.b1]
+name = "bunker: fixed gun with a 90 degree arc, armoured"
+sprite = "tiles:356"
+tint = "#7d8470"
+scale = 1
+hp = 6
+speed = 0
+score = 500
+armored = true
+footprint = [ 1, 1 ]
+facing = "fixed"
+turret = "tank_barrel"
+death = "bunker"
+shadow = 1.3
+
+[types.b1.move]
+kind = "static"
+
+[types.b1.attack]
+kind = "arc"
+interval = 1
+range = 9
+bullet_speed = 4.7
+projectile = "bullet"
+muzzle = 0.7
+arc_deg = 90
+arc_facing = "down"
+

@@ -1,9 +1,11 @@
 import Phaser from "phaser";
 import { BARREL, CRATE_HP, GRENADE, GRENADE_PICKUP, PLAYER, POW_SCORE, TILE, TILE_FRAMES, VIEW_H, VIEW_W } from "../config";
-import { createEnemy, Enemy } from "../entities/enemies";
+import { cloneGrid, type Grid } from "../data/level";
+import { parseSpriteRef } from "../data/sprites";
+import { store, type World } from "../data/store";
+import { Enemy } from "../entities/Enemy";
 import { Player } from "../entities/Player";
 import { DEPTH, Fx } from "../fx";
-import { parseGrid, TERRAIN, UNITS, type Grid } from "../level";
 
 type Side = "player" | "enemy";
 type Obstacle = Phaser.GameObjects.GameObject & { x: number; y: number; getData(k: string): any; setData(k: string, v: any): any };
@@ -16,6 +18,7 @@ export class GameScene extends Phaser.Scene {
   player!: Player;
   grenades = 0;
 
+  world!: World;
   private terrain!: Grid;
   private units!: Grid;
   private rows = 0;
@@ -45,8 +48,9 @@ export class GameScene extends Phaser.Scene {
     this.enemies = [];
     this.clouds = [];
     this.state = "playing";
-    this.terrain = parseGrid(TERRAIN);
-    this.units = parseGrid(UNITS);
+    this.world = store.world!;
+    this.terrain = cloneGrid(this.world.level.terrain); // copy: barrels and crates clear their cell
+    this.units = this.world.level.units;
     this.rows = this.terrain.length;
     this.cols = this.terrain[0].length;
     const worldW = this.cols * TILE, worldH = this.rows * TILE;
@@ -60,7 +64,8 @@ export class GameScene extends Phaser.Scene {
     this.shells = this.physics.add.group();
     this.pickups = this.physics.add.staticGroup();
 
-    this.player = new Player(this, 8 * TILE, worldH - TILE * 1.2);
+    const start = this.startPosition();
+    this.player = new Player(this, start.x, start.y);
     this.buildUnits();
 
     // collisions
@@ -97,7 +102,7 @@ export class GameScene extends Phaser.Scene {
     // camera: only scrolls up, like the arcade original
     const cam = this.cameras.main;
     cam.setBounds(0, 0, worldW, worldH);
-    cam.scrollY = worldH - VIEW_H;
+    cam.scrollY = Phaser.Math.Clamp(start.y - (VIEW_H - TILE * 1.2), 0, worldH - VIEW_H);
     // colour grade + vignette as screen-space overlays (works on any renderer)
     this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0xd9d2bc).setOrigin(0).setScrollFactor(0).setBlendMode(Phaser.BlendModes.MULTIPLY).setDepth(DEPTH.screen);
     this.add.image(VIEW_W / 2, VIEW_H / 2, "vignette").setDisplaySize(VIEW_W, VIEW_H).setScrollFactor(0).setDepth(DEPTH.screen + 1);
@@ -110,6 +115,20 @@ export class GameScene extends Phaser.Scene {
     this.scene.launch("hud");
 
     this.input.keyboard!.on("keydown-R", () => this.scene.restart());
+
+    // the files on disk changed (editor, agent, text editor): play the new world
+    const off = store.on(({ worldChanged }) => worldChanged && this.scene.restart());
+    this.events.once("shutdown", off);
+  }
+
+  /** Bottom of the level by default, or the row picked in the editor. */
+  private startPosition() {
+    const row = store.startRow;
+    if (row === null || row >= this.rows) return { x: 8 * TILE, y: this.rows * TILE - TILE * 1.2 };
+    for (const c of [7, 8, 6, 9, 5, 10, 4, 11, 3, 12, 2, 13]) {
+      if (WALKABLE.has(this.terrain[row][c])) return { x: c * TILE + TILE / 2, y: row * TILE + TILE / 2 };
+    }
+    return { x: 8 * TILE, y: row * TILE + TILE / 2 };
   }
 
   update(time: number, delta: number) {
@@ -272,14 +291,10 @@ export class GameScene extends Phaser.Scene {
   private buildUnits() {
     this.powsTotal = 0;
     this.forEachCell(this.units, (code, x, y) => {
-      if (code === "t1") {
-        const e = createEnemy(code, this, x + TILE / 2, y + TILE / 2); // 2x2 footprint
-        if (e) this.enemies.push(e);
-        return;
-      }
-      const e = createEnemy(code, this, x, y);
-      if (e) {
-        this.enemies.push(e);
+      const def = this.world.enemies[code];
+      if (def) {
+        // multi-cell units are marked by their top-left cell; centre them on their footprint
+        this.enemies.push(new Enemy(this, x + ((def.footprint[0] - 1) * TILE) / 2, y + ((def.footprint[1] - 1) * TILE) / 2, code, def));
         return;
       }
       if (code === "h1") {
@@ -299,21 +314,18 @@ export class GameScene extends Phaser.Scene {
   onEnemyKilled(e: Enemy) {
     this.addScore(e.score);
     this.fx.floatingText(e.x, e.y - 20, `${e.score}`);
-    if (!(e.armored)) {
-      this.fx.explosion(e.x, e.y, 0.35);
-      this.leaveWreck(e.x, e.y, e.rotation, "soldier");
-    }
   }
 
-  leaveWreck(x: number, y: number, rotation: number, kind: "tank" | "bunker" | "soldier") {
-    if (kind === "soldier") {
-      const body = this.add.image(x, y, "rifleman").setRotation(rotation).setTint(0x333333).setAlpha(0.55).setDepth(DEPTH.decals);
+  /** What is left behind: a fading body for soldiers, a smoking wreck for vehicles and bunkers. */
+  leaveWreck(e: Enemy) {
+    const { x, y, rotation } = e;
+    const [texture, frame] = parseSpriteRef(e.def.sprite);
+    if (e.def.death === "soldier") {
+      const body = this.add.image(x, y, texture, frame).setRotation(rotation).setScale(e.def.scale).setTint(0x333333).setAlpha(0.55).setDepth(DEPTH.decals);
       this.tweens.add({ targets: body, alpha: 0, delay: 4000, duration: 2000, onComplete: () => body.destroy() });
       return;
     }
-    const tex = kind === "tank" ? "tank" : "tiles";
-    const wreck = this.add.image(x, y, tex, kind === "bunker" ? TILE_FRAMES.bunkerBase[0] : undefined).setRotation(rotation).setTint(0x2a2a2a).setDepth(DEPTH.decals + 0.5);
-    if (kind === "tank") wreck.setScale(1.5);
+    this.add.image(x, y, texture, frame).setRotation(rotation).setScale(e.def.scale).setTint(0x2a2a2a).setDepth(DEPTH.decals + 0.5);
     // smoke keeps rising from the wreck
     this.time.addEvent({
       delay: 220, repeat: 40, callback: () => {

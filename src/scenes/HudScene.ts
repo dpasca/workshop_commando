@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { VIEW_H, VIEW_W } from "../config";
-import { LEVEL_NAME } from "../level";
+import { store } from "../data/store";
 
 type Hud = { score: number; lives: number; grenades: number; pows: number; powsTotal: number };
 
@@ -25,7 +25,7 @@ export class HudScene extends Phaser.Scene {
     game.events.once("gameover", (r: { won: boolean; score: number }) => this.showEnd(r.won, r.score));
     game.events.once("shutdown", () => this.scene.stop());
 
-    this.banner(LEVEL_NAME.toUpperCase(), "WASD move · mouse aim · click fire · SPACE / right-click grenade", 2000);
+    this.banner(store.world!.level.name.toUpperCase(), "WASD move · mouse aim · click fire · SPACE / right-click grenade", 2000);
   }
 
   private refresh(h?: Hud) {
