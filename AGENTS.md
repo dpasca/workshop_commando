@@ -21,6 +21,16 @@ Starter project for a hands-on workshop: the level and enemy behaviours are hard
 - `src/scenes/HudScene.ts` — score line and banners. `src/fx.ts` — cosmetic effects only.
 - `public/assets/` — Kenney CC0 sprites (licences in `public/assets/licenses/`).
 
+## Workshop reference branches: don't spoil them
+
+Later workshop phases have reference solutions on the branches `phase-2` and `phase-3`.
+Participants may build a phase themselves or jump straight to its reference; that's their call, not yours.
+
+- Unless the user explicitly asks, do not read, diff, check out, merge, cherry-pick or copy from `phase-*`
+  branches, and don't inspect them indirectly (`git log --all`, `git show phase-…`, `git grep` across refs).
+- If the user asks to switch to a reference, prefer a separate worktree
+  (`git worktree add ../commando-phase-2 phase-2`) so their own work stays untouched.
+
 ## Conventions
 
 - Keep gameplay state out of `fx.ts`; effects must be safe to remove.
