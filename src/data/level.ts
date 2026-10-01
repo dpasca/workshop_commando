@@ -39,16 +39,17 @@ export const DEFAULT_PICKUPS: Record<string, string> = {
   g1: "grenade box: +3 grenades",
 };
 
-const pad3 = (n: number) => String(n).padStart(3, "0");
+export const pad3 = (n: number) => String(n).padStart(3, "0");
 
-export function parseGrid(text: string, what: string, problems: string[]): Grid {
+/** Parses numbered grid lines. `firstRow` is the number the first line must carry (0 for a whole grid). */
+export function parseGrid(text: string, what: string, problems: string[], firstRow = 0): Grid {
   const rows: Grid = [];
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   lines.forEach((line, i) => {
     const parts = line.split(/\s+/);
     const label = parts.shift()!;
-    if (!/^\d{3}$/.test(label) || Number(label) !== i) {
-      problems.push(`${what}: line ${i + 1} should start with row number ${pad3(i)}, found "${label}"`);
+    if (!/^\d{3}$/.test(label) || Number(label) !== firstRow + i) {
+      problems.push(`${what}: line ${i + 1} should start with row number ${pad3(firstRow + i)}, found "${label}"`);
       return;
     }
     rows.push(parts);

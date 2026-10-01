@@ -8,7 +8,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "check:data": "tsx scripts/check-data.ts"
+    "check:data": "tsx scripts/check-data.ts",
+    "test:ask": "tsx scripts/test-ask.ts",
+    "try:agent": "tsx scripts/try-agent.ts"
   },
   "dependencies": {
     "phaser": "3.90.0",

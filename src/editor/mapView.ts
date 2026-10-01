@@ -19,6 +19,7 @@ export class MapView {
   private live = document.createElement("canvas");
   private ctx = this.canvas.getContext("2d")!;
   private liveCtx = this.live.getContext("2d")!;
+  private rulerDrag: { start: number; moved: boolean } | null = null;
   private drag: { rect: boolean; start: [number, number]; cur: [number, number]; changed: boolean } | null = null;
   private pending = false;
 
@@ -63,9 +64,10 @@ export class MapView {
     if (!level) return;
     const { r, c, ruler } = this.cell(e);
     if (ruler) {
-      store.startRow = store.startRow === r ? null : r;
-      this.ed.updateStatus();
-      return this.render();
+      // a click chooses the row "Play here" starts from; a drag selects the rows the agent may change
+      try { this.canvas.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ }
+      this.rulerDrag = { start: r, moved: false };
+      return;
     }
     if (e.button === 2 || e.altKey) return this.ed.pick(r, c);
     if (e.button !== 0) return;
@@ -80,6 +82,11 @@ export class MapView {
     const level = this.ed.level;
     if (!level) return;
     const { r, c, ruler } = this.cell(e);
+    if (this.rulerDrag) {
+      if (r !== this.rulerDrag.start) this.rulerDrag.moved = true;
+      if (this.rulerDrag.moved) this.ed.setSelection([Math.min(this.rulerDrag.start, r), Math.max(this.rulerDrag.start, r)]);
+      return;
+    }
     this.hover.textContent = ruler ? `row ${pad3(r)}: click to start playing from here` : this.ed.describe(r, c);
     if (!this.drag) return;
     const [pr, pc] = this.drag.cur;
@@ -97,6 +104,17 @@ export class MapView {
   }
 
   private up(e: PointerEvent) {
+    if (this.rulerDrag) {
+      const { start, moved } = this.rulerDrag;
+      this.rulerDrag = null;
+      try { this.canvas.releasePointerCapture(e.pointerId); } catch { /* as above */ }
+      if (!moved) {
+        store.startRow = store.startRow === start ? null : start;
+        this.ed.updateStatus();
+        this.render();
+      }
+      return;
+    }
     const d = this.drag;
     if (!d) return;
     this.drag = null;
@@ -113,7 +131,7 @@ export class MapView {
   }
 
   render() {
-    const level = this.ed.level;
+    const level = this.ed.shown;
     if (!level) return;
     const enemies = this.ed.enemies ?? {};
     const { canvas, ctx } = this;
@@ -169,6 +187,27 @@ export class MapView {
       ctx.lineTo(w, r * CELL + 0.5);
     }
     ctx.stroke();
+
+    // rows the agent may change
+    const sel = this.ed.selection;
+    if (sel) {
+      ctx.fillStyle = "rgba(90,160,255,0.16)";
+      ctx.fillRect(RULER, sel[0] * CELL, LEVEL_WIDTH * CELL, (sel[1] - sel[0] + 1) * CELL);
+      ctx.fillStyle = "#5aa0ff";
+      ctx.fillRect(RULER - 4, sel[0] * CELL, 4, (sel[1] - sel[0] + 1) * CELL);
+      ctx.strokeStyle = "#5aa0ff";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(RULER + 0.5, sel[0] * CELL + 0.5, LEVEL_WIDTH * CELL - 1, (sel[1] - sel[0] + 1) * CELL - 1);
+    }
+
+    // cells the agent's proposal changed
+    if (this.ed.proposal) {
+      ctx.strokeStyle = "#4cff7a";
+      ctx.lineWidth = 2;
+      for (let r = 0; r < level.height; r++) {
+        for (let c = 0; c < LEVEL_WIDTH; c++) if (this.ed.isChanged(r, c)) ctx.strokeRect(RULER + c * CELL + 1, r * CELL + 1, CELL - 2, CELL - 2);
+      }
+    }
 
     // rectangle being dragged
     if (this.drag?.rect) {

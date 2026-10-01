@@ -3,3 +3,5 @@ dist/
 _kenney/
 .DS_Store
 _prep/
+data/ask_log.jsonl
+data/requests.md

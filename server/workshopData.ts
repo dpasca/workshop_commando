@@ -5,6 +5,8 @@ import type { Plugin } from "vite";
 import { parseEnemies } from "../src/data/enemies";
 import { DataError } from "../src/data/errors";
 import { parseLevel } from "../src/data/level";
+import { ask, availableBackends, runAgent, type AskRequest, type Backend } from "./ask";
+import { appendEntry, appendOutcome, appendRequest, forPrompt, readEntries, recent, type LogEntry } from "./askLog";
 
 // Dev-server plugin: the browser can't write files, so this exposes data/ over a tiny HTTP API and
 // tells the page when a file changes on disk (whoever changed it: the editor, an agent, a text editor).
@@ -14,6 +16,10 @@ import { parseLevel } from "../src/data/level";
 //   PUT  /api/level/:name     -> validate, then write (creates the file if new)
 //   GET  /api/enemies         -> enemies.toml text
 //   PUT  /api/enemies         -> validate (including every level), then write
+//   GET  /api/ask/backends    -> which agent CLIs are installed
+//   GET  /api/ask/history     -> recent Ask requests for ?level=
+//   POST /api/ask             -> run the level-editing agent; returns a proposal (writes nothing)
+//   POST /api/ask/outcome     -> record whether the proposal was accepted or rejected
 //
 // Change notifications use Vite's websocket: event "workshop:data-changed".
 
@@ -53,6 +59,46 @@ export function workshopData(): Plugin {
 
   const levelNames = () =>
     fs.existsSync(levelsDir()) ? fs.readdirSync(levelsDir()).filter((f) => f.endsWith(".toml")).map((f) => f.slice(0, -5)).sort() : [];
+
+  const handleAsk = async (req: IncomingMessage, res: ServerResponse) => {
+    const body = JSON.parse(await readBody(req)) as {
+      level: string; levelText: string; instruction: string; rows: [number, number] | null;
+      layers: AskRequest["layers"]; backend: Backend; model?: string;
+    };
+    const instruction = String(body.instruction ?? "").trim();
+    if (!instruction) return send(res, 400, { ok: false, errors: ["write what you want first"] });
+    if (!availableBackends().some((b) => b.id === body.backend && b.available)) return send(res, 400, { ok: false, errors: [`${body.backend} is not installed (not found on PATH)`] });
+    const enemies = parseEnemies(fs.readFileSync(enemiesFile(), "utf8"));
+    const level = parseLevel(String(body.levelText), enemies); // the editor's current text, including unsaved edits
+
+    const abort = new AbortController();
+    res.on("close", () => !res.writableEnded && abort.abort()); // the page cancelled or went away: stop the agent
+    const started = Date.now();
+    const rows = body.rows ? ([Number(body.rows[0]), Number(body.rows[1])] as [number, number]) : null;
+    const askReq: AskRequest = { instruction, rows, layers: body.layers?.length ? body.layers : ["terrain", "units"], history: forPrompt(recent(dataDir, body.level, 5)) };
+    const entry: LogEntry = { id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, at: new Date().toISOString(), level: body.level, instruction, rows, backend: body.backend, summary: "", outcome: "failed" };
+
+    let result;
+    try {
+      result = await ask(level, enemies, askReq, (prompt) => runAgent(body.backend, prompt, { model: body.model || undefined, signal: abort.signal }));
+    } catch (e) {
+      if (abort.signal.aborted) return;
+      appendEntry(dataDir, { ...entry, outcome: "failed", detail: (e as Error).message });
+      return send(res, 502, { ok: false, errors: [(e as Error).message] });
+    }
+    const ms = Date.now() - started;
+    if (result.kind === "proposal") {
+      appendEntry(dataDir, { ...entry, summary: result.proposal.summary, outcome: "proposed" });
+      return send(res, 200, { ok: true, id: entry.id, ms, backend: body.backend, ...result.proposal });
+    }
+    if (result.kind === "needs") {
+      appendEntry(dataDir, { ...entry, outcome: "needs", detail: result.needs });
+      appendRequest(dataDir, body.level, instruction, result.needs);
+      return send(res, 200, { ok: false, id: entry.id, ms, needs: result.needs });
+    }
+    appendEntry(dataDir, { ...entry, outcome: "failed", detail: result.problems.join("; ").slice(0, 300) });
+    return send(res, 200, { ok: false, id: entry.id, ms, errors: result.problems, attempts: result.attempts });
+  };
 
   return {
     name: "workshop-data",
@@ -95,6 +141,22 @@ export function workshopData(): Plugin {
               return send(res, 200, { ok: true });
             }
           }
+
+          if (url === "/ask/backends" && method === "GET") return send(res, 200, { backends: availableBackends() });
+
+          if (url === "/ask/history" && method === "GET") {
+            const level = new URL(req.url ?? "", "http://x").searchParams.get("level") ?? "";
+            return send(res, 200, { entries: recent(dataDir, level, 8) });
+          }
+
+          if (url === "/ask/outcome" && method === "POST") {
+            const body = JSON.parse(await readBody(req)) as { id: string; outcome: LogEntry["outcome"]; detail?: string };
+            if (!readEntries(dataDir).some((e) => e.id === body.id)) return send(res, 404, { ok: false, errors: ["unknown request id"] });
+            appendOutcome(dataDir, body.id, body.outcome, body.detail);
+            return send(res, 200, { ok: true });
+          }
+
+          if (url === "/ask" && method === "POST") return await handleAsk(req, res);
 
           const m = url.match(/^\/level\/([^/]+)$/);
           if (m) {

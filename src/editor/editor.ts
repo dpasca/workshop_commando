@@ -1,8 +1,10 @@
 import type Phaser from "phaser";
 import { parseEnemies, serializeEnemies, type EnemyTypes } from "../data/enemies";
 import { DataError } from "../data/errors";
+import { checkLevel, summarize } from "../data/check";
 import { blankLevel, cloneGrid, EMPTY, parseLevel, serializeLevel, type Grid, type LevelData } from "../data/level";
 import { store, type World } from "../data/store";
+import { AskPanel, type ClientProposal } from "./askPanel";
 import { drawTerrain, drawUnit, imageLoaded } from "./draw";
 import { EnemyForm } from "./enemyForm";
 import { CELL, MapView } from "./mapView";
@@ -35,7 +37,8 @@ const HTML = `
     <span id="ed-hover" class="hint"></span>
   </div>
   <div id="ed-palette"></div>
-  <div class="hint">paint: click / drag · rectangle: shift + drag · pick: right-click · start row: click a row number</div>
+  <div class="hint">paint: click / drag · rectangle: shift + drag · pick: right-click · start row: click a row number · rows for the agent: drag on the row numbers</div>
+  <div id="ed-check"></div>
   <div id="ed-map"></div>
 </section>
 <section id="tab-enemies" hidden></section>
@@ -61,14 +64,25 @@ export class Editor {
   private undoStack: Snapshot[] = [];
   private redoStack: Snapshot[] = [];
 
+  /** Rows the agent may change (null = all). */
+  selection: [number, number] | null = null;
+  proposal: ClientProposal | null = null;
+  private busy = false;
+  private peeking = false;
+  private changedCells = new Set<string>();
+  private shownCache: { proposal: ClientProposal; level: LevelData } | null = null;
+
   private map: MapView;
   private form: EnemyForm;
+  private ask: AskPanel;
   private el = (id: string) => this.root.querySelector<HTMLElement>(`#${id}`)!;
 
   constructor(readonly game: Phaser.Game, private root: HTMLElement) {
     root.innerHTML = HTML;
     this.map = new MapView(this, this.el("ed-map"), this.el("ed-hover"));
     this.form = new EnemyForm(this, this.el("tab-enemies"));
+    this.ask = new AskPanel(this, this.el("tab-map"));
+    void this.ask.loadHistory();
 
     const on = (id: string, fn: () => void) =>
       this.el(id).addEventListener("click", (e) => {
@@ -104,7 +118,7 @@ export class Editor {
     // Keys typed into the panel must not reach the game (WASD would walk the player).
     root.addEventListener("keydown", (e) => {
       this.shortcuts(e);
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) e.stopPropagation();
+      if (isTyping(e.target)) e.stopPropagation();
     });
     window.addEventListener("keydown", (e) => {
       if (!root.contains(e.target as Node)) this.shortcuts(e);
@@ -157,6 +171,9 @@ export class Editor {
     this.lastSaved = "";
     this.undoStack = [];
     this.redoStack = [];
+    this.proposal = null;
+    if (this.selection) this.selection = [Math.min(this.selection[0], this.level.height - 1), Math.min(this.selection[1], this.level.height - 1)];
+    void this.ask?.loadHistory();
   }
 
   private revert() {
@@ -188,6 +205,7 @@ export class Editor {
   /** Sets one cell to the selected brush. Returns true if it changed. */
   paint(r: number, c: number): boolean {
     const level = this.level!;
+    if (this.proposal || this.busy) return false; // finish with the agent's answer first
     const code = this.brushes[this.layer];
     if (this.grid[r][c] === code) return false;
     const fp = this.enemies?.[code]?.footprint;
@@ -237,6 +255,99 @@ export class Editor {
     this.undoStack.push(this.snapshot());
     Object.assign(this.level, next);
     this.markLevelDirty();
+  }
+
+  // ---------------------------------------------------------------- asking an agent
+
+  levelText() {
+    return serializeLevel(this.level!);
+  }
+
+  setSelection(sel: [number, number] | null) {
+    this.selection = sel;
+    this.ask.render();
+    this.map.schedule();
+  }
+
+  setBusy(busy: boolean) {
+    this.busy = busy;
+    this.renderAll();
+  }
+
+  /** The level as it would be after accepting the agent's proposal (or as it is, with no proposal). */
+  get shown(): LevelData | null {
+    if (!this.level || !this.proposal || this.peeking) return this.level;
+    if (this.shownCache?.proposal === this.proposal) return this.shownCache.level;
+    const level = structuredClone(this.level);
+    const p = this.proposal;
+    p.terrain.forEach((row, i) => (level.terrain[p.rows[0] + i] = row));
+    p.units.forEach((row, i) => (level.units[p.rows[0] + i] = row));
+    this.shownCache = { proposal: p, level };
+    return level;
+  }
+
+  isChanged(r: number, c: number) {
+    return !this.peeking && this.changedCells.has(`${r},${c}`);
+  }
+
+  setProposal(p: ClientProposal) {
+    this.proposal = p;
+    this.changedCells.clear();
+    for (const layer of ["terrain", "units"] as const) {
+      p[layer].forEach((row, i) => row.forEach((code, c) => code !== this.level![layer][p.rows[0] + i][c] && this.changedCells.add(`${p.rows[0] + i},${c}`)));
+    }
+    const first = Math.min(...[...this.changedCells].map((k) => Number(k.split(",")[0])), p.rows[0]);
+    this.root.scrollTop = this.el("ed-map").offsetTop + first * CELL - 120;
+    this.renderAll();
+  }
+
+  peek(on: boolean) {
+    this.peeking = on;
+    this.map.schedule();
+    this.renderCheck();
+  }
+
+  acceptProposal() {
+    const p = this.proposal;
+    if (!p || !this.level) return;
+    this.pushUndo();
+    p.terrain.forEach((row, i) => (this.level!.terrain[p.rows[0] + i] = row.slice()));
+    p.units.forEach((row, i) => (this.level!.units[p.rows[0] + i] = row.slice()));
+    this.proposal = null;
+    void this.reportOutcome(p.id, "accepted");
+    this.markLevelDirty();
+  }
+
+  rejectProposal() {
+    const p = this.proposal;
+    if (!p) return;
+    this.proposal = null;
+    this.peeking = false;
+    void this.reportOutcome(p.id, "rejected");
+    this.renderAll();
+  }
+
+  private async reportOutcome(id: string, outcome: "accepted" | "rejected") {
+    await fetch("/api/ask/outcome", { method: "POST", body: JSON.stringify({ id, outcome }) }).catch(() => {});
+    void this.ask.loadHistory();
+  }
+
+  private renderCheck() {
+    const box = this.el("ed-check");
+    const level = this.shown;
+    if (!level || !this.enemies) return box.replaceChildren();
+    const r = checkLevel(level, this.enemies);
+    box.className = r.errors.length ? "check bad" : "check ok";
+    box.replaceChildren();
+    const head = document.createElement("div");
+    head.textContent = `${r.errors.length ? "✗" : "✓"} ${summarize(r)}${this.proposal && !this.peeking ? " (with the agent's change)" : ""}`;
+    box.append(head);
+    for (const line of [...r.errors.map((e) => `error: ${e}`), ...r.warnings.map((w) => `warning: ${w}`)].slice(0, 5)) {
+      const d = document.createElement("div");
+      d.className = "issue";
+      d.textContent = line;
+      box.append(d);
+    }
   }
 
   // ---------------------------------------------------------------- saving
@@ -333,7 +444,7 @@ export class Editor {
 
   private shortcuts(e: KeyboardEvent) {
     const mod = e.metaKey || e.ctrlKey;
-    const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement;
+    const typing = isTyping(e.target);
     if (mod && e.key === "s") {
       e.preventDefault();
       void this.save();
@@ -359,6 +470,8 @@ export class Editor {
     this.updateStatus();
     this.renderMessages();
     this.renderPalette();
+    this.renderCheck();
+    this.ask.render();
     this.map.schedule();
     if (!this.el("tab-enemies").hidden) this.form.refresh();
     (this.root.querySelector("#ed-undo") as HTMLButtonElement).disabled = !this.undoStack.length;
@@ -439,6 +552,10 @@ export class Editor {
       host.append(b);
     }
   }
+}
+
+function isTyping(target: EventTarget | null) {
+  return target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement;
 }
 
 export function initEditor(game: Phaser.Game) {

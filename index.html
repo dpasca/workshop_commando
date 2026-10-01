@@ -49,6 +49,17 @@
       .field span { width: 110px; flex: none; color: #aab5bf; }
       .field input[type="text"], .field input[type="number"], .field select { flex: 1; min-width: 0; }
       .field input[type="number"] { max-width: 90px; flex: none; }
+      #editor textarea { width: 100%; box-sizing: border-box; font: inherit; color: inherit; background: #232a31; border: 1px solid #3a444e; border-radius: 4px; padding: 6px 8px; resize: vertical; margin-bottom: 6px; }
+      details.ask { border: 1px solid #333c45; border-radius: 4px; padding: 6px 8px; margin-bottom: 8px; }
+      details.ask summary { cursor: pointer; color: #9fb2c4; margin-bottom: 6px; }
+      details.ask label { color: #aab5bf; }
+      .msg.info { background: #1f3a2b; color: #bff0cf; font-family: inherit; font-size: 13px; }
+      .hist { padding: 1px 0; color: #aab5bf; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .hist:hover { color: #fff; }
+      .hist.accepted { color: #9fe0b1; } .hist.rejected, .hist.failed { color: #c98a82; } .hist.needs { color: #e0c27a; }
+      #ed-check { margin: 6px 0; font-size: 12px; }
+      #ed-check.ok > div:first-child { color: #9fe0b1; } #ed-check.bad > div:first-child { color: #ffb0a0; }
+      #ed-check .issue { color: #c9a98a; font: 11px Menlo, monospace; padding-left: 12px; }
       .preview { margin-left: auto; width: 96px; height: 96px; border-radius: 4px; }
     </style>
   </head>

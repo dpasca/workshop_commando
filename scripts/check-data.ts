@@ -3,6 +3,7 @@
 // editor doesn't rewrite a whole file). Run: pnpm check:data
 import { readdirSync, readFileSync } from "node:fs";
 import { parseEnemies, serializeEnemies } from "../src/data/enemies";
+import { checkLevel, summarize } from "../src/data/check";
 import { DataError } from "../src/data/errors";
 import { parseLevel, serializeLevel } from "../src/data/level";
 
@@ -28,7 +29,11 @@ if (enemies) {
     try {
       const text = readFileSync(`data/levels/${file}`, "utf8");
       const level = parseLevel(text, enemies);
-      console.log(`✓ data/levels/${file}: "${level.name}", ${level.width}x${level.height}`);
+      const check = checkLevel(level, enemies);
+      console.log(`${check.errors.length ? "✗" : "✓"} data/levels/${file}: "${level.name}", ${summarize(check)}`);
+      for (const e of check.errors) console.error(`    error: ${e}`);
+      for (const w of check.warnings) console.log(`    warning: ${w}`);
+      if (check.errors.length) failed = true;
       if (serializeLevel(level) !== text) console.log("  note: not in the editor's canonical layout (harmless; the next editor save will reformat it)");
     } catch (e) {
       report(`data/levels/${file}`, e);

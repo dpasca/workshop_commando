@@ -16,7 +16,7 @@ Controls: **WASD** move · **mouse** aim · **click** fire · **Space / right-cl
 
 Rescue the POWs, reach the top. Bunkers and tanks shrug off bullets: use grenades, or a nearby red barrel.
 
-## This branch: phase 2, data + editor
+## Phase 2: data + editor
 
 The level and the enemies are TOML files in `data/`, and the page has an editor next to the game.
 
@@ -33,11 +33,36 @@ The level and the enemies are TOML files in `data/`, and the page has an editor 
 
 File formats are documented at the top of each data file and in `AGENTS.md`.
 
+## This branch: phase 3, an agent in the editor
+
+The *Ask an agent* section at the top of the editor's Map tab edits the map from a sentence.
+
+1. **Choose what it may touch:** drag on the row numbers to select rows (or leave it as the whole map), and tick whether terrain, units or both may change.
+   *Game view* selects the rows currently on screen.
+2. **Ask** (⌘↵): the dev server builds a prompt (rules, legend, what each enemy does, the whole map, your selection, your last few requests)
+   and runs your coding-agent CLI headlessly: `claude -p`, `codex exec` or `opencode run`, chosen in the dropdown. You can keep playing while it works.
+3. **Review:** the answer is checked (valid codes, a walkable route, units on walkable cells, tank footprints on road, nothing next to the spawn, ...).
+   If a check fails the problems go back to the agent for another try, up to three. A passing answer is **previewed on the map** with the changed
+   cells outlined; *Hold to see original* peeks at the before. **Accept** applies it as an ordinary undoable edit; then Save as usual. **Reject** drops it.
+4. **If it can't be done** with the terrain, units and behaviours that exist ("add a helicopter boss"), the agent says so and the request is appended
+   to `data/requests.md`, ready to hand to a coding session.
+
+The agent is a stateless function here: the page owns the level, the history (`data/ask_log.jsonl`) and the validation. The CLIs run in an empty
+temporary directory with tools off (Claude) or a read-only sandbox (Codex), so all they can do is answer with text.
+
+Typical latency on one machine with the 12 KB prompt: Claude Code with its default model ~40 s, with `sonnet` ~19 s; Codex ~44 s.
+Put a model name in the field next to the CLI choice to trade quality for speed. Dry-run a CLI before relying on it:
+
+```sh
+pnpm try:agent claude "add a sniper nest on the right with cover" 30 56 sonnet
+pnpm test:ask      # the loop against scripted fake agents; no network
+```
+
 ## Workshop phases
 
 1. **Hard-coded** (`main`, tag `phase-1-start`): the level is a text grid in `src/level.ts`, behaviours are code. Add features and effects.
-2. **Data + editor** (`phase-2`, this branch): the level and the enemy definitions move to TOML files, with a level editor and hot reload.
-3. **Agent in the editor** (`phase-3`): the editor calls a headless coding agent to edit the level on request.
+2. **Data + editor** (`phase-2`): the level and the enemy definitions move to TOML files, with a level editor and hot reload.
+3. **Agent in the editor** (`phase-3`, this branch): the editor calls a headless coding agent to edit the level on request.
 
 ## Credits
 
