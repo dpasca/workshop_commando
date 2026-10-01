@@ -16,7 +16,8 @@ The game is deliberately plain. What matters is the scaffolding that lets you, a
   - *Build:* implement the card with your agent. Needs a working agent and some patience.
   - *Explore:* skip to the finished version of that phase and play with it, then try to break it. This is a full path, not a consolation prize.
   - Switching is one command and keeps your own work safe (see below).
-- **Aim for the floor, then reach.** If you are not at "done when" with ~10 minutes left in a phase, take the reference and use it. You will want it for the next card.
+- **Aim for the floor, then reach.** If you are not at "done when" with ~10 minutes left in card 2 or 3, take the reference and use it. You will want it for the next card.
+- **Your decisions are the point.** In our dry runs an agent alone reached each floor in 7 to 18 minutes. Spend the rest of the time deciding, checking, and understanding what was built. Each card has a "Decide before you prompt" list.
 
 | Card | Time | |
 |---|---|---|
@@ -41,5 +42,6 @@ Each branch builds on the previous one, and its `README.md` and `AGENTS.md` desc
 
 ## Sharing levels at the end
 
-A level only plays on someone else's machine together with the enemy definitions it uses. Share **both** `data/enemies.toml` and your
-level file (AirDrop, USB, a gist, chat). Drop the level into their `data/levels/` and open `?level=<name>`.
+Share your level file (AirDrop, USB, a gist, chat). If your enemies are data too (the reference has `data/enemies.toml`), share that file as well,
+since a level only works with the enemy definitions it uses. On the reference, drop the level into `data/levels/` and open `?level=<name>`;
+on your own build, use whatever loading you made.
