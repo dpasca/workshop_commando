@@ -18,6 +18,7 @@ Pick one or two from the menu (or invent your own). Draw a [constraint card](con
 | Look | night level with a flashlight cone · rain · muzzle light · heat haze on explosions |
 
 Ask for the result, tell the agent to run `pnpm typecheck`, and make it **look at the game** (see the cheat sheet: agents can drive a browser, and the dev build exposes `window.game`).
+Pick features that can be **seen or measured** (a dash you can time, a banner you can screenshot). If you add a control, update the controls hint on the start banner in `src/scenes/HudScene.ts`.
 
 ## Lane B · audio, in a separate worktree
 
@@ -33,18 +34,19 @@ Brief for the audio agent (adapt it):
 
 > Add sound to this game with the Web Audio API, **no audio files**: synthesised shots, explosions, grenade lob and pickup jingles,
 > enemy hits, POW rescue, game over. Put everything in a new `src/audio.ts` and call it with **one-line calls** from the game code
-> (`audio.play("shot")`), so the diff to existing files stays tiny. Browsers block audio until the first click; handle that.
+> (`audio.play("shot")`), so the diff to existing files stays tiny. Browsers block audio until the first click or key press; handle that.
 
-When it works: commit in the audio worktree, then in your main checkout `git merge audio`.
-Expect a few conflicts if both lanes touched the same lines; resolving them (by hand, or ask an agent) is part of the exercise.
+When it works: commit in the audio worktree (do it yourself if the agent can't; Codex's sandbox blocks commits), then in your main checkout `git merge audio`.
+**Leave 10 minutes for the merge.** Expect a conflict or two where both lanes touched the same lines (in our dry run: one import line).
+Resolve by hand, or ask an agent; it took one 24 seconds.
 
 > **Why a one-file design?** Two agents editing the same files in parallel is the expensive case. The less lane B touches, the cheaper the merge.
 
 ## Done when
 
-- [ ] at least one feature from lane A is visible in the game
-- [ ] the game makes sound, merged from lane B
-- [ ] `pnpm typecheck` passes
+- [ ] lane A: at least one feature is visible (or measurable) in the game
+- [ ] lane B: the game makes sound, committed on the `audio` branch
+- [ ] you (the pair, not either agent) merged `audio` into your main checkout, and `pnpm typecheck` passes
 
 ## Notice (we will talk about it)
 
@@ -56,4 +58,4 @@ Expect a few conflicts if both lanes touched the same lines; resolving them (by 
 
 A second effect · tune values in `src/config.ts` · a boss · make the audio react to what is happening (heartbeat when you are hurt).
 
-Next: [02 Data and an editor](02-data-and-editor.md). *If you are behind, the next card starts from `main` too; your lane A work is a bonus, not a prerequisite.*
+Next: [02 Data and an editor](02-data-and-editor.md). *Card 1 has no reference branch: it is open-ended. If you are behind, the next card starts from `main` too; your lane A work is a bonus, not a prerequisite.*

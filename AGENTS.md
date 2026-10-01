@@ -36,6 +36,8 @@ Participants may build a phase themselves or jump straight to its reference; tha
 
 - Keep gameplay state out of `fx.ts`; effects must be safe to remove.
 - Depth order is defined once in `DEPTH` (`src/fx.ts`).
+- `CLAUDE.md` is a symlink to this file: edit only `AGENTS.md`.
 - In dev builds the game is reachable as `window.game` (e.g. `game.scene.getScene("game")`) for debugging
-  and browser-driven checks.
+  and browser-driven checks. Until `src/main.ts` has run, `window.game` is the `<div id="game">` element instead
+  (browsers expose element ids as globals), so check `window.game instanceof Phaser.Game` or wait for it.
 - Run `pnpm typecheck` before handing work back.
