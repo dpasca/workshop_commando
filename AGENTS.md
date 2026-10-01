@@ -2,6 +2,7 @@
 
 Top-down, vertically scrolling run-and-gun (Capcom's *Commando*, 1985, as the reference).
 Starter project for a hands-on workshop: the level and enemy behaviours are hard-coded on purpose.
+Participant handouts are in `workshop/` (start with `workshop/README.md`).
 
 ## Stack (pinned)
 
