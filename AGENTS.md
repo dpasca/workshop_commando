@@ -3,6 +3,7 @@
 Top-down, vertically scrolling run-and-gun (Capcom's *Commando*, 1985, as the reference).
 Starter project for a hands-on workshop. This is the **phase-2** state: the level and the enemies are
 **data files** (`data/`), there is an in-browser editor, and the game reloads when the files change.
+Participant handouts are in `workshop/` (start with `workshop/README.md`).
 
 ## Stack (pinned)
 
