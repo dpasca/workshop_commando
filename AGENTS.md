@@ -75,8 +75,10 @@ Participants may build a phase themselves or jump straight to its reference; tha
 
 - Keep gameplay state out of `fx.ts`; effects must be safe to remove.
 - Depth order is defined once in `DEPTH` (`src/fx.ts`).
+- `CLAUDE.md` is a symlink to this file: edit only `AGENTS.md`.
 - In dev builds the game is `window.game` and the editor is `window.editor` (for debugging and browser-driven checks).
   Browsers throttle background tabs; to test gameplay deterministically call `game.loop.sleep()` and drive it with `game.step(time, delta)`.
+  Until `src/main.ts` has run, `window.game` is the `<div id="game">` element instead (browsers expose element ids as globals).
 - Tests: `pnpm test:ask` runs the Ask loop against scripted fake agents (no network). `pnpm try:agent <cli> "<request>" [rows] [model]`
   dry-runs it against a real CLI and prints timing and validity.
 - Run `pnpm typecheck`, `pnpm check:data` and `pnpm test:ask` before handing work back.
