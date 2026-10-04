@@ -15,18 +15,18 @@ Every coding agent has a headless mode (`claude -p`, `codex exec`, `opencode run
 
 ## Decide before you prompt
 
-In our dry runs an agent built this card's floor in about 15 minutes. Spend your time on the decisions:
+In our tests, an agent working alone reached this goal in about 15 minutes. Spend your time on the decisions:
 
 1. **Reply format.** "Return the complete rows of the selected range, with their numbers" keeps replies small and easy to check.
 2. **What may change.** Which rows, which grid, and is the agent ever allowed to touch enemy definitions?
 3. **Edits while it thinks.** The answer takes 15 to 45 s. The simplest rule: pause painting until you accept or reject.
 4. **Where the rules live.** The player start and what counts as walkable are private to `GameScene.ts` today. Move them to a shared module so the game and your checker agree.
 
-## Steps (the floor first)
+## Steps (the goal first)
 
 1. **Call a CLI from the dev server** with a fixed prompt and print what comes back (use the table below).
 2. **Build the prompt** from your level: instructions, legend, the map, and the request. Ask for a reply in a format you can parse.
-3. **Parse and validate** the reply: right number of rows, two-character cells, only known codes, and **one gameplay check: there is still a walkable path from the bottom to the top**. The rest of the list below is stretch.
+3. **Parse and validate** the reply: right number of rows, two-character cells, only known codes, and **one gameplay check: there is still a walkable path from the bottom to the top**. The rest of the list below is extra.
 4. **Preview and apply.** Show the proposed change on the map; Accept applies it (undoable); Reject throws it away. Then Save as usual.
 
 ## Calling the CLIs headlessly
@@ -49,7 +49,7 @@ Pitfalls: kill the child process when the user cancels · set a timeout · on Wi
 ## What to put in the prompt
 
 A role · the game in three sentences · the map format · the legend (and what each enemy does, in words) · the rules the result must obey · the full map for context ·
-**which rows may change** · recent requests and what you did with them (stretch) · the request · the exact reply format. Offer an escape hatch:
+**which rows may change** · recent requests and what you did with them (an extra) · the request · the exact reply format. Offer an escape hatch:
 *"if this needs something the game cannot do, reply `NEEDS: <what>` instead"*. It is the cheapest way to find out what to build next.
 
 ## What to validate
@@ -69,19 +69,19 @@ the player starts at the bottom centre: second-to-last row, columns 7 and 8.
   A good model with the rules in its prompt rarely breaks them, so force it: leave the rules out of the prompt (a checkbox helps) and ask for
   "a wall across the whole map", or paste a hand-written bad reply into your parser.
 
-## Stretch
+## Extras
 
 Retry with the problems fed back · limit it to a row range · a history list that feeds the next prompt · a model picker ·
 log `NEEDS` replies to a file a coding session can work from · run two CLIs on the same request and compare.
 
-## Explore track (no building)
+## Or: use the finished version
 
-Use the finished version (`git worktree add ../commando-phase-3 phase-3`):
+Switch to it (`git worktree add ../commando-exercise-3 exercise-3`) and:
 
 1. Try five requests: three sensible, one vague ("make it better"), one impossible ("add a helicopter boss").
 2. Same request on two CLIs or two models. Compare time, result, and how well each followed the format.
 3. Try to **break** it: what does it accept that it should not? What does the checker miss? Write down three findings.
-4. Open `data/requests.md` and `data/ask_log.jsonl` (the reference writes them). What would you build next from them?
+4. Open `data/requests.md` and `data/ask_log.jsonl` (the finished version writes them). What would you build next from them?
 
 ## Finish: pack your level
 
