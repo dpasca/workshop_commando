@@ -45,7 +45,7 @@ Your existing level is in `src/level.ts` in almost exactly this shape.
 
 ## Decide before you prompt
 
-In our dry runs an agent reached this card's floor in 7 to 15 minutes. The time that matters is yours: **make these calls yourselves**, tell the agent, and be able to explain the result.
+In our tests, an agent working alone reached this goal in 7 to 15 minutes. The time that matters is yours: **make these calls yourselves**, tell the agent, and be able to explain the result.
 
 1. What happens to the running game when the file changes: restart from the bottom, or keep the player where they are?
 2. A file changes on disk while you have unsaved paint in the editor. Whose edit wins?
@@ -54,7 +54,7 @@ In our dry runs an agent reached this card's floor in 7 to 15 minutes. The time 
 
 When it works, ask: **"Walk me through the data flow from a file save to the game restarting, in five lines."** Draw it.
 
-## Steps (the floor first)
+## Steps (the goal first)
 
 1. **Level in a file.** Move the grids out of `src/level.ts` into `data/levels/<name>.toml` and load them. A TOML library helps (`smol-toml`).
 2. **Hot reload.** Edit the file in a text editor, save, and the game restarts with the change. Think about who watches the file: the dev server knows when it changes.
@@ -69,19 +69,19 @@ When it works, ask: **"Walk me through the data flow from a file save to the gam
 - [ ] you paint a tile in your editor, press Save, and the game reloads with it
 - [ ] a deliberately broken file shows a readable error and the game keeps running
 
-## Stretch (pick what excites you)
+## Extras (pick what excites you)
 
 Enemies as data (a table of types: sprite, hp, speed, one movement and one attack) · undo/redo · "play from this row" · a live overlay of where the camera and player are ·
-several levels and a level picker · row numbers you can drag to select a region (you will want that in card 3).
+several levels and a level picker · row numbers you can drag to select a region (you will want that in exercise 3).
 
-## Explore track (no building)
+## Or: use the finished version
 
-Switch to the finished version (`git worktree add ../commando-phase-2 phase-2`, see the README) and:
+Switch to it (`git worktree add ../commando-exercise-2 exercise-2`, see the README) and:
 
 - Design a 2-minute level with a story: a quiet start, an ambush, a bridge, a boss.
 - Open **Enemies**, clone the sniper, make it twice as fast with half the range. Does the level still work?
 - Edit the level file in a text editor **while playing**. Then break it on purpose and read the error.
-- Run `pnpm check:data` after an edit (it exists on the reference branch).
+- Run `pnpm check:data` after an edit (it exists in the finished version).
 
 ## Notice
 

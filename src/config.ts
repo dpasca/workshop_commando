@@ -1,4 +1,4 @@
-// Game constants, hard-coded (workshop Phase 1 starting point).
+// Game constants, hard-coded (workshop exercise 1 starting point).
 
 export const TILE = 64;
 export const VIEW_W = 1024; // 16 columns

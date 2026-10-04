@@ -16,11 +16,13 @@ Controls: **WASD** move · **mouse** aim · **click** fire · **Space / right-cl
 
 Rescue the POWs, reach the top. Bunkers and tanks shrug off bullets: use grenades, or a nearby red barrel.
 
-## Workshop phases
+## The exercises
 
-1. **Hard-coded** — the level is a text grid in `src/level.ts`, behaviours are code. Add features and effects.
-2. **Data + editor** — move the level (and enemy definitions) to TOML files and build a level editor with hot reload.
-3. **Agent in the editor** — the editor calls a headless coding agent to edit the level on request.
+Handouts are in `workshop/` (start with `workshop/README.md`).
+
+1. **Hard-coded** (this branch): the level is a text grid in `src/level.ts`, behaviours are code. Add features and effects.
+2. **Data + editor** (finished version on the `exercise-2` branch): the level and the enemy definitions move to TOML files, with a level editor and hot reload.
+3. **Agent in the editor** (finished version on the `exercise-3` branch): the editor calls a headless coding agent to edit the level on request.
 
 ## Credits
 

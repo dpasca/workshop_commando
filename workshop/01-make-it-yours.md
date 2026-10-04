@@ -2,9 +2,9 @@
 
 **Goal:** change the game with your agent, feel what the edit-rebuild-reload cycle costs, and run **two agents in parallel** without them stepping on each other.
 
-You work in two lanes at once. Start lane B first; it runs while you work on lane A.
+You work on two parts at once. Start part B first; it runs while you work on part A.
 
-## Lane A · features and effects (in your main checkout)
+## Part A · features and effects (in your main checkout)
 
 Pick one or two from the menu (or invent your own). Draw a [constraint card](constraints.md) if you want a make-do twist.
 
@@ -20,9 +20,9 @@ Pick one or two from the menu (or invent your own). Draw a [constraint card](con
 Ask for the result, tell the agent to run `pnpm typecheck`, and make it **look at the game** (see the cheat sheet: agents can drive a browser, and the dev build exposes `window.game`).
 Pick features that can be **seen or measured** (a dash you can time, a banner you can screenshot). If you add a control, update the controls hint on the start banner in `src/scenes/HudScene.ts`.
 
-## Lane B · audio, in a separate worktree
+## Part B · audio, in a separate worktree
 
-The game is silent. Make an agent add sound **while you work on lane A**:
+The game is silent. Make an agent add sound **while you work on part A**:
 
 ```sh
 git worktree add ../commando-audio -b audio
@@ -37,15 +37,15 @@ Brief for the audio agent (adapt it):
 > (`audio.play("shot")`), so the diff to existing files stays tiny. Browsers block audio until the first click or key press; handle that.
 
 When it works: commit in the audio worktree (do it yourself if the agent can't; Codex's sandbox blocks commits), then in your main checkout `git merge audio`.
-**Leave 10 minutes for the merge.** Expect a conflict or two where both lanes touched the same lines (in our dry run: one import line).
+**Leave 10 minutes for the merge.** Expect a conflict or two where both parts touched the same lines (in our test: one import line).
 Resolve by hand, or ask an agent; it took one 24 seconds.
 
-> **Why a one-file design?** Two agents editing the same files in parallel is the expensive case. The less lane B touches, the cheaper the merge.
+> **Why a one-file design?** Two agents editing the same files in parallel is the expensive case. The less part B touches, the cheaper the merge.
 
 ## Done when
 
-- [ ] lane A: at least one feature is visible (or measurable) in the game
-- [ ] lane B: the game makes sound, committed on the `audio` branch
+- [ ] part A: at least one feature is visible (or measurable) in the game
+- [ ] part B: the game makes sound, committed on the `audio` branch
 - [ ] you (the pair, not either agent) merged `audio` into your main checkout, and `pnpm typecheck` passes
 
 ## Notice (we will talk about it)
@@ -54,8 +54,8 @@ Resolve by hand, or ask an agent; it took one 24 seconds.
 - What did you have to explain to the agent twice?
 - What did the merge teach you about splitting work?
 
-## Stretch
+## Extras
 
 A second effect · tune values in `src/config.ts` · a boss · make the audio react to what is happening (heartbeat when you are hurt).
 
-Next: [02 Data and an editor](02-data-and-editor.md). *Card 1 has no reference branch: it is open-ended. If you are behind, the next card starts from `main` too; your lane A work is a bonus, not a prerequisite.*
+Next: [02 Data and an editor](02-data-and-editor.md). *Exercise 1 has no finished version: it is open-ended. If you are behind, the next exercise starts from `main` too; your part A work is a bonus, not a prerequisite.*

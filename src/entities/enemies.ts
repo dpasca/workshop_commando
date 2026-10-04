@@ -3,7 +3,7 @@ import { ENEMIES, TILE, TILE_FRAMES } from "../config";
 import { DEPTH } from "../fx";
 import type { GameScene } from "../scenes/GameScene";
 
-// Enemy behaviours, hard-coded per type (workshop Phase 1 starting point).
+// Enemy behaviours, hard-coded per type (workshop exercise 1 starting point).
 
 export abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
   declare body: Phaser.Physics.Arcade.Body;
