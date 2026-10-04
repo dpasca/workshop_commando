@@ -1,4 +1,4 @@
-# Constraint cards (optional, for card 1)
+# Constraint cards (optional, for exercise 1)
 
 Games used to be made with almost nothing, and the limits made the work interesting. Draw one (or pick the one that scares you).
 
@@ -11,4 +11,4 @@ Games used to be made with almost nothing, and the limits made the work interest
 7. **Fewer lines.** After it works, ask the agent to make the diff half as long without changing behaviour.
 8. **It must be funny.** Players should laugh at least once.
 9. **Make it fair.** A new threat must always give the player a way to avoid or answer it.
-10. **Sound off.** It must communicate with the screen alone (you will add sound in lane B).
+10. **Sound off.** It must communicate with the screen alone (you will add sound in part B).

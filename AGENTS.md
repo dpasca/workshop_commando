@@ -1,7 +1,7 @@
 # Commando Workshop — agent notes
 
 Top-down, vertically scrolling run-and-gun (Capcom's *Commando*, 1985, as the reference).
-Starter project for a hands-on workshop. This is the **phase-3** state: the level and the enemies are
+Starter project for a hands-on workshop. This branch, `exercise-3`, is the finished version of exercise 3: the level and the enemies are
 **data files** (`data/`), there is an in-browser editor, the game reloads when the files change, and the editor can
 ask a headless coding agent (Claude Code, Codex or OpenCode) to edit the map.
 Participant handouts are in `workshop/` (start with `workshop/README.md`).
@@ -61,15 +61,15 @@ Participant handouts are in `workshop/` (start with `workshop/README.md`).
 - `src/config.ts` — player and weapon numbers, tile frame indices. `src/fx.ts` — cosmetic effects only.
 - `public/assets/` — Kenney CC0 sprites (licences in `public/assets/licenses/`).
 
-## Workshop reference branches: don't spoil them
+## Finished versions on other branches: don't spoil them
 
-Later workshop phases have reference solutions on the branch `phase-3` (and `phase-2` is this one).
-Participants may build a phase themselves or jump straight to its reference; that's their call, not yours.
+This branch is the finished version of exercise 3; exercise 2's is on the branch `exercise-2`.
+Participants may build an exercise themselves or switch to its finished version; that's their call, not yours.
 
-- Unless the user explicitly asks, do not read, diff, check out, merge, cherry-pick or copy from other `phase-*`
-  branches, and don't inspect them indirectly (`git log --all`, `git show phase-…`, `git grep` across refs).
-- If the user asks to switch to a reference, prefer a separate worktree
-  (`git worktree add ../commando-phase-3 phase-3`) so their own work stays untouched.
+- Unless the user explicitly asks, do not read, diff, check out, merge, cherry-pick or copy from other `exercise-*`
+  branches, and don't inspect them indirectly (`git log --all`, `git show exercise-…`, `git grep` across refs).
+- If the user asks to switch to a finished version, prefer a separate worktree
+  (`git worktree add ../commando-exercise-2 exercise-2`) so their own work stays untouched.
 
 ## Conventions
 
@@ -80,5 +80,5 @@ Participants may build a phase themselves or jump straight to its reference; tha
   Browsers throttle background tabs; to test gameplay deterministically call `game.loop.sleep()` and drive it with `game.step(time, delta)`.
   Until `src/main.ts` has run, `window.game` is the `<div id="game">` element instead (browsers expose element ids as globals).
 - Tests: `pnpm test:ask` runs the Ask loop against scripted fake agents (no network). `pnpm try:agent <cli> "<request>" [rows] [model]`
-  dry-runs it against a real CLI and prints timing and validity.
+  tries it against a real CLI and prints timing and validity.
 - Run `pnpm typecheck`, `pnpm check:data` and `pnpm test:ask` before handing work back.

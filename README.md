@@ -16,7 +16,7 @@ Controls: **WASD** move · **mouse** aim · **click** fire · **Space / right-cl
 
 Rescue the POWs, reach the top. Bunkers and tanks shrug off bullets: use grenades, or a nearby red barrel.
 
-## Phase 2: data + editor
+## Exercise 2: data + editor
 
 The level and the enemies are TOML files in `data/`, and the page has an editor next to the game.
 
@@ -33,7 +33,7 @@ The level and the enemies are TOML files in `data/`, and the page has an editor 
 
 File formats are documented at the top of each data file and in `AGENTS.md`.
 
-## This branch: phase 3, an agent in the editor
+## This branch: exercise 3, an agent in the editor
 
 The *Ask an agent* section at the top of the editor's Map tab edits the map from a sentence.
 
@@ -51,18 +51,20 @@ The agent is a stateless function here: the page owns the level, the history (`d
 temporary directory with tools off (Claude) or a read-only sandbox (Codex), so all they can do is answer with text.
 
 Typical latency on one machine with the 12 KB prompt: Claude Code with its default model ~40 s, with `sonnet` ~19 s; Codex ~44 s.
-Put a model name in the field next to the CLI choice to trade quality for speed. Dry-run a CLI before relying on it:
+Put a model name in the field next to the CLI choice to trade quality for speed. Try a CLI from the command line before relying on it:
 
 ```sh
 pnpm try:agent claude "add a sniper nest on the right with cover" 30 56 sonnet
 pnpm test:ask      # the loop against scripted fake agents; no network
 ```
 
-## Workshop phases
+## The exercises
 
-1. **Hard-coded** (`main`, tag `phase-1-start`): the level is a text grid in `src/level.ts`, behaviours are code. Add features and effects.
-2. **Data + editor** (`phase-2`): the level and the enemy definitions move to TOML files, with a level editor and hot reload.
-3. **Agent in the editor** (`phase-3`, this branch): the editor calls a headless coding agent to edit the level on request.
+Handouts are in `workshop/` (start with `workshop/README.md`).
+
+1. **Hard-coded** (`main`): the level is a text grid in `src/level.ts`, behaviours are code. Add features and effects.
+2. **Data + editor** (finished version on the `exercise-2` branch): the level and the enemy definitions move to TOML files, with a level editor and hot reload.
+3. **Agent in the editor** (this branch, the finished version): the editor calls a headless coding agent to edit the level on request.
 
 ## Credits
 

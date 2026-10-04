@@ -1,4 +1,4 @@
-// The level, hard-coded (workshop Phase 1 starting point).
+// The level, hard-coded (workshop exercise 1 starting point).
 // Two grids of the same size, 16 columns x 80 rows, row 000 is the top (exit),
 // the player starts at the bottom. Every cell is exactly two characters.
 //

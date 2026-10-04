@@ -21,7 +21,7 @@ Codex runs commands in a sandbox that, by default, cannot write inside `.git`: i
 
 ## Merge conflicts
 
-Two lanes editing the same lines will conflict. Either fix by hand, or ask an agent: *"I am in the middle of a merge with conflicts. Resolve them keeping both sides' intent, then run `pnpm typecheck`."* Check the result by playing.
+Two agents editing the same lines will conflict. Either fix by hand, or ask an agent: *"I am in the middle of a merge with conflicts. Resolve them keeping both sides' intent, then run `pnpm typecheck`."* Check the result by playing.
 
 ## Help the agent see
 
@@ -31,7 +31,7 @@ Two lanes editing the same lines will conflict. Either fix by hand, or ask an ag
 - Give it a screenshot (paste or a path) and say what is wrong. "The explosion looks flat" is better with a picture.
 - Browsers throttle background tabs. For deterministic tests, an agent can call `game.loop.sleep()` and step the game with `game.step(time, delta)`.
 
-## Headless modes (what card 3 uses)
+## Headless modes (what exercise 3 uses)
 
 | | one-shot prompt |
 |---|---|
