@@ -49,8 +49,8 @@ Pitfalls: kill the child process when the user cancels · set a timeout · on Wi
 ## What to put in the prompt
 
 A role · the game in three sentences · the map format · the legend (and what each enemy does, in words) · the rules the result must obey · the full map for context ·
-**which rows may change** · recent requests and what you did with them (an extra) · the request · the exact reply format. Offer an escape hatch:
-*"if this needs something the game cannot do, reply `NEEDS: <what>` instead"*. It is the cheapest way to find out what to build next.
+**which rows may change** · recent requests and what you did with them (an extra) · the request · the exact reply format. Give the agent a way to talk back:
+*"if something concerns you (the request needs something the game cannot do, it is unclear, or you had to change more than asked), add a line `AGENT_MESSAGE: <what>`; if it cannot be done at all, reply with only that line"*. Those messages tell you what to build next.
 
 ## What to validate
 
@@ -72,7 +72,7 @@ the player starts at the bottom centre: second-to-last row, columns 7 and 8.
 ## Extras
 
 Retry with the problems fed back · limit it to a row range · a history list that feeds the next prompt · a model picker ·
-log `NEEDS` replies to a file a coding session can work from · try the same request with two models and compare.
+log `AGENT_MESSAGE` lines to a file a coding session can work from · try the same request with two models and compare.
 
 ## Or: use the finished version
 
@@ -81,7 +81,7 @@ Switch to it (`git worktree add ../commando-exercise-3 exercise-3`) and:
 1. Try five requests: three sensible, one vague ("make it better"), one impossible ("add a helicopter boss").
 2. The same request with two models (for example `sonnet` and the default). Compare time, result, and how well each followed the format.
 3. Try to **break** it: what does it accept that it should not? What does the checker miss? Write down three findings.
-4. Open `data/requests.md` and `data/ask_log.jsonl` (the finished version writes them). What would you build next from them?
+4. Open `data/agent-messages.md` and `data/ask_log.jsonl` (the finished version writes them). What would you build next from them?
 
 ## Finish: pick your level
 
