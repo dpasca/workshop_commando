@@ -4,7 +4,7 @@
 
 You work on two parts at once. Start part B first; it runs while you work on part A.
 
-## Part A · features and effects (in your main checkout)
+## Part A · features and effects (in your `master` checkout)
 
 Pick one or two from the menu (or invent your own). Draw a [constraint card](constraints.md) if you want a make-do twist.
 
@@ -36,7 +36,7 @@ Brief for the audio agent (adapt it):
 > enemy hits, POW rescue, game over. Put everything in a new `src/audio.ts` and call it with **one-line calls** from the game code
 > (`audio.play("shot")`), so the diff to existing files stays tiny. Browsers block audio until the first click or key press; handle that.
 
-When it works: commit in the audio worktree (do it yourself if the agent can't; Codex's sandbox blocks commits), then in your main checkout `git merge audio`.
+When it works: commit in the audio worktree (do it yourself if the agent can't; Codex's sandbox blocks commits), then in your `master` checkout `git merge audio`.
 **Leave 10 minutes for the merge.** Expect a conflict or two where both parts touched the same lines (in our test: one import line).
 Resolve by hand, or ask an agent; it took one 24 seconds.
 
@@ -46,7 +46,7 @@ Resolve by hand, or ask an agent; it took one 24 seconds.
 
 - [ ] part A: at least one feature is visible (or measurable) in the game
 - [ ] part B: the game makes sound, committed on the `audio` branch
-- [ ] you (not either agent) merged `audio` into your main checkout, and `pnpm typecheck` passes
+- [ ] you (not either agent) merged `audio` into your `master` checkout, and `pnpm typecheck` passes
 
 ## Notice (we will talk about it)
 
