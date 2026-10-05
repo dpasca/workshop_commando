@@ -1,3 +1,5 @@
+日本語版: [ja/README.md](ja/README.md)
+
 # Workshop handouts
 
 Today you build the **tooling** around a small Commando-style shooter, and you build it with AI coding agents.

@@ -1,3 +1,5 @@
+日本語版: [README.ja.md](README.ja.md) · Japanese handouts: [workshop/ja/](workshop/ja/README.md)
+
 # Commando Workshop
 
 A small top-down, vertically scrolling shooter used as the starter for a hands-on workshop on
