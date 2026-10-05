@@ -10,14 +10,14 @@ The game is deliberately plain. What matters is the scaffolding that lets you, a
 
 ## How the day works
 
-- **Pairs, one agent CLI each.** Claude Code, Codex or OpenCode; any one is enough. Mix them: seeing how differently they behave is part of the point.
+- **Pairs, one AI coding tool per pair.** Claude Code, Codex or OpenCode: whichever you already use.
 - **Three exercises, in order.** Each has a goal with a "done when" checklist, and extras if you have time. Nobody is graded.
 - **Build it yourself, or use the finished version.** Your choice, at any time.
   - *Build it yourself:* implement the exercise with your agent.
   - *Use the finished version:* switch to it, play with it, then try to break it. This is a real option, not a consolation prize.
   - Switching is one command and keeps your own work safe (see below).
 - **Reach the goal first, then the extras.** If you are not close to the goal with ~10 minutes left in exercise 2 or 3, switch to the finished version. You will want it for the next exercise.
-- **Your decisions are the point.** In our tests, an agent working alone reached each goal in 7 to 18 minutes. Spend the rest of the time deciding, checking, and understanding what was built. Each exercise has a "Decide before you prompt" list.
+- **Your decisions are the point.** In our tests, an agent working alone reached each goal in 10 to 20 minutes. Spend the rest of the time deciding, checking, and understanding what was built. Each exercise has a "Decide before you prompt" list.
 
 | Exercise | Time | |
 |---|---|---|
@@ -40,8 +40,6 @@ cd ../commando-exercise-2 && pnpm install && pnpm dev --port 5174
 
 Each branch builds on the previous one, and its `README.md` and `AGENTS.md` describe what it does.
 
-## Sharing levels at the end
+## Showing your level at the end
 
-Share your level file (AirDrop, USB, a gist, chat). If your enemies are data too (the finished version has `data/enemies.toml`), share that file as well,
-since a level only works with the enemy definitions it uses. On the finished version, drop the level into `data/levels/` and open `?level=<name>`;
-on your own build, use whatever loading you made.
+In the last part of the day, each pair shows its best level on its own laptop, or on the projector. Nothing to copy or send.
