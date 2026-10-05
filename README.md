@@ -69,3 +69,7 @@ Handouts are in `workshop/` (start with `workshop/README.md`).
 ## Credits
 
 Sprites and tiles: [Kenney](https://kenney.nl) — *Top-down Shooter* and *Top-Down Tanks*, CC0.
+
+## Licence
+
+The code and handouts are [MIT](LICENSE) licensed. The sprites and tiles keep their own CC0 licence (`public/assets/licenses/`).
