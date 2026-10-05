@@ -11,7 +11,8 @@ Every coding agent has a headless mode (`claude -p`, `codex exec`, `opencode run
 2. **You build the context.** The prompt is assembled by code: rules, legend, the map, the selected rows, the last few requests, the new request. Writing that template teaches you what the agent actually needs.
 3. **Least privilege.** The agent gets no tools and no files; it can only answer with text. Your program applies the change, never the agent.
 4. **Never trust the output.** Parse it, validate it, and show it before applying it. A reply that breaks the rules is sent back with the reasons (retry), not applied.
-5. **Latency is a UX problem.** An answer takes 15 to 45 seconds. Show progress, allow cancel, and do not freeze the game.
+5. **Latency is a UX problem.** An answer takes 15 seconds to 2 minutes, depending on the model and how many rows it may change. Show progress, allow cancel, and do not freeze the game.
+   `claude -p --output-format stream-json --verbose --include-partial-messages` prints the answer as it is written; `codex exec --json` prints its steps.
 
 ## Decide before you prompt
 
@@ -19,7 +20,7 @@ In our tests, an agent working alone reached this goal in about 15 minutes. Spen
 
 1. **Reply format.** "Return the complete rows of the selected range, with their numbers" keeps replies small and easy to check.
 2. **What may change.** Which rows, which grid, and is the agent ever allowed to touch enemy definitions?
-3. **Edits while it thinks.** The answer takes 15 to 45 s. The simplest rule: pause painting until you accept or reject.
+3. **Edits while it thinks.** The answer takes 15 s to 2 minutes. The simplest rule: pause painting until you accept or reject.
 4. **Where the rules live.** The player start and what counts as walkable are private to `GameScene.ts` today. Move them to a shared module so the game and your checker agree.
 
 ## Steps (the goal first)
