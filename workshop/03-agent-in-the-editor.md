@@ -72,17 +72,17 @@ the player starts at the bottom centre: second-to-last row, columns 7 and 8.
 ## Extras
 
 Retry with the problems fed back · limit it to a row range · a history list that feeds the next prompt · a model picker ·
-log `NEEDS` replies to a file a coding session can work from · run two CLIs on the same request and compare.
+log `NEEDS` replies to a file a coding session can work from · try the same request with two models and compare.
 
 ## Or: use the finished version
 
 Switch to it (`git worktree add ../commando-exercise-3 exercise-3`) and:
 
 1. Try five requests: three sensible, one vague ("make it better"), one impossible ("add a helicopter boss").
-2. Same request on two CLIs or two models. Compare time, result, and how well each followed the format.
+2. The same request with two models (for example `sonnet` and the default). Compare time, result, and how well each followed the format.
 3. Try to **break** it: what does it accept that it should not? What does the checker miss? Write down three findings.
 4. Open `data/requests.md` and `data/ask_log.jsonl` (the finished version writes them). What would you build next from them?
 
-## Finish: pack your level
+## Finish: pick your level
 
-Choose your best level and pack the pair of files to share: `data/enemies.toml` and `data/levels/<name>.toml`. In the last session we play each other's levels.
+Choose your best level to show in the last session, on your laptop or on the projector, together with one request that worked and one that did not.

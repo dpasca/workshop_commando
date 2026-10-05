@@ -45,7 +45,7 @@ Your existing level is in `src/level.ts` in almost exactly this shape.
 
 ## Decide before you prompt
 
-In our tests, an agent working alone reached this goal in 7 to 15 minutes. The time that matters is yours: **make these calls yourselves**, tell the agent, and be able to explain the result.
+In our tests, an agent working alone reached this goal in 10 to 15 minutes. The time that matters is yours: **make these calls yourselves**, tell the agent, and be able to explain the result.
 
 1. What happens to the running game when the file changes: restart from the bottom, or keep the player where they are?
 2. A file changes on disk while you have unsaved paint in the editor. Whose edit wins?
