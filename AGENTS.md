@@ -67,3 +67,9 @@ Participants may build an exercise themselves or switch to its finished version;
   Browsers throttle background tabs; to test gameplay deterministically call `game.loop.sleep()` and drive it with `game.step(time, delta)`.
   Until `src/main.ts` has run, `window.game` is the `<div id="game">` element instead (browsers expose element ids as globals).
 - Run `pnpm typecheck` and `pnpm check:data` before handing work back.
+
+## Git ownership and branch names
+
+- Do not add AI co-author trailers, AI signatures, generated-by credits, or session links to commit messages or pull request descriptions. Preserve human author identity and human co-author credits.
+- Use `master` as the default branch. Never choose another default branch name unless the user explicitly asks for it. Respect the existing branch when working in an established repository.
+- Do not bypass or remove attribution settings or Git hooks enforcing this policy.

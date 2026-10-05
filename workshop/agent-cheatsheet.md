@@ -11,7 +11,7 @@ codex --worktree                                 # so can Codex
 cd ../commando-audio && pnpm install && pnpm dev --port 5174      # its own dev server, its own port
 ```
 
-Merge back in your main checkout: `git merge audio`. List and remove: `git worktree list`, `git worktree remove ../commando-audio`.
+Merge back in your `master` checkout: `git merge audio`. List and remove: `git worktree list`, `git worktree remove ../commando-audio`.
 Ignored files do not come along (no `node_modules`, no `.env`): run `pnpm install` in each worktree.
 
 ## Codex's sandbox
