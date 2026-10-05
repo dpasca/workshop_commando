@@ -46,7 +46,7 @@ Resolve by hand, or ask an agent; it took one 24 seconds.
 
 - [ ] part A: at least one feature is visible (or measurable) in the game
 - [ ] part B: the game makes sound, committed on the `audio` branch
-- [ ] you (the pair, not either agent) merged `audio` into your main checkout, and `pnpm typecheck` passes
+- [ ] you (not either agent) merged `audio` into your main checkout, and `pnpm typecheck` passes
 
 ## Notice (we will talk about it)
 

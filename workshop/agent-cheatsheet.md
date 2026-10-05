@@ -41,7 +41,7 @@ Two agents editing the same lines will conflict. Either fix by hand, or ask an a
 
 ## Keep your quota alive
 
-- Two agents per pair is plenty. Ten parallel sessions will hit rate limits and slow everyone.
+- Two agents per laptop is plenty. Ten parallel sessions will hit rate limits and slow everyone.
 - Use a smaller/faster model for small, well-specified jobs; keep the big one for design decisions and debugging.
 - Ask for a plan before a big change, and tell it to run `pnpm typecheck` itself.
 - Commit often. A working commit is the best undo.
