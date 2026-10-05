@@ -44,6 +44,8 @@ Participant handouts are in `workshop/` (start with `workshop/README.md`).
   rows the agent may change, recent history, the request), runs a coding-agent CLI headlessly, parses the reply, merges it, validates it
   (parser plus level checker; only problems the change *introduced* count) and retries up to 3 times feeding the problems back.
   The CLIs run in an empty temp directory with tools disabled / read-only sandbox, so the agent can only answer with text.
+  `POST /api/ask` streams progress as JSON lines (`AskEvent`: prompt, CLI activity, thinking tokens, reply text as it arrives, problems),
+  the last line is the result; Claude runs with `--output-format stream-json`, Codex with `--json`. `askPanel.ts` shows them while you wait.
   `server/askLog.ts` keeps `data/ask_log.jsonl` (requests and what the designer did with them; the latest go into the next prompt)
   and `data/agent-messages.md` (anything the agent flagged with "AGENT_MESSAGE: ...": requests that need new code, or concerns
   about a change it proposed). Both files are git-ignored.

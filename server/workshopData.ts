@@ -18,7 +18,8 @@ import { appendEntry, appendAgentMessage, appendOutcome, forPrompt, readEntries,
 //   PUT  /api/enemies         -> validate (including every level), then write
 //   GET  /api/ask/backends    -> which agent CLIs are installed
 //   GET  /api/ask/history     -> recent Ask requests for ?level=
-//   POST /api/ask             -> run the level-editing agent; returns a proposal (writes nothing)
+//   POST /api/ask             -> run the level-editing agent; streams progress as JSON lines, the last one is the
+//                                result (a proposal, the agent's message, or errors). Writes nothing to the level.
 //   POST /api/ask/outcome     -> record whether the proposal was accepted or rejected
 //
 // Change notifications use Vite's websocket: event "workshop:data-changed".
@@ -78,27 +79,37 @@ export function workshopData(): Plugin {
     const askReq: AskRequest = { instruction, rows, layers: body.layers?.length ? body.layers : ["terrain", "units"], history: forPrompt(recent(dataDir, body.level, 5)) };
     const entry: LogEntry = { id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, at: new Date().toISOString(), level: body.level, instruction, rows, backend: body.backend, summary: "", outcome: "failed" };
 
+    // From here on the answer is a stream of JSON lines, so the page can show each step while the agent works.
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    const emit = (e: object) => void (!res.writableEnded && res.write(JSON.stringify(e) + "\n"));
+    const finish = (result: object) => {
+      emit({ type: "result", ...result });
+      res.end();
+    };
+
     let result;
     try {
-      result = await ask(level, enemies, askReq, (prompt) => runAgent(body.backend, prompt, { model: body.model || undefined, signal: abort.signal }));
+      result = await ask(level, enemies, askReq, (prompt, onOutput) => runAgent(body.backend, prompt, { model: body.model || undefined, signal: abort.signal, onOutput }), emit);
     } catch (e) {
       if (abort.signal.aborted) return;
       appendEntry(dataDir, { ...entry, outcome: "failed", detail: (e as Error).message });
-      return send(res, 502, { ok: false, errors: [(e as Error).message] });
+      return finish({ ok: false, errors: [(e as Error).message] });
     }
     const ms = Date.now() - started;
     if (result.kind === "proposal") {
       appendEntry(dataDir, { ...entry, summary: result.proposal.summary, outcome: "proposed" });
       if (result.proposal.message) appendAgentMessage(dataDir, body.level, instruction, result.proposal.message, true);
-      return send(res, 200, { ok: true, id: entry.id, ms, backend: body.backend, ...result.proposal });
+      return finish({ ok: true, id: entry.id, ms, backend: body.backend, ...result.proposal });
     }
     if (result.kind === "message") {
       appendEntry(dataDir, { ...entry, outcome: "message", detail: result.message });
       appendAgentMessage(dataDir, body.level, instruction, result.message, false);
-      return send(res, 200, { ok: false, id: entry.id, ms, message: result.message });
+      return finish({ ok: false, id: entry.id, ms, message: result.message });
     }
     appendEntry(dataDir, { ...entry, outcome: "failed", detail: result.problems.join("; ").slice(0, 300) });
-    return send(res, 200, { ok: false, id: entry.id, ms, errors: result.problems, attempts: result.attempts });
+    return finish({ ok: false, id: entry.id, ms, errors: result.problems, attempts: result.attempts });
   };
 
   return {

@@ -58,6 +58,22 @@ export type AskResult =
   | { kind: "message"; message: string }
   | { kind: "failed"; problems: string[]; attempts: number };
 
+/**
+ * What the loop reports while it works, so the editor can show it instead of a black box.
+ * "output" is the agent's reply as it streams in; "activity" is a step the agent CLI reported;
+ * "thinking" carries how many tokens the model has thought so far (the thoughts themselves are not shown).
+ */
+export type AskEvent =
+  | { type: "prompt"; attempt: number; chars: number; prompt: string }
+  | { type: "activity"; attempt: number; text: string }
+  | { type: "thinking"; attempt: number; text: string }
+  | { type: "output"; attempt: number; text: string }
+  | { type: "reply"; attempt: number; chars: number; ms: number; reply: string }
+  | { type: "problems"; attempt: number; problems: string[] };
+
+/** Live output from an agent CLI: reply text as it arrives, or a step it reported. */
+export type OnOutput = (kind: "output" | "activity" | "thinking", text: string) => void;
+
 export const MAX_ATTEMPTS = 3;
 
 // ------------------------------------------------------------------ prompt
@@ -193,14 +209,24 @@ export function applyReply(level: LevelData, enemies: EnemyTypes, reply: Reply, 
 
 // ------------------------------------------------------------------ the loop
 
-export async function ask(level: LevelData, enemies: EnemyTypes, req: AskRequest, run: (prompt: string) => Promise<string>): Promise<AskResult> {
+export async function ask(
+  level: LevelData,
+  enemies: EnemyTypes,
+  req: AskRequest,
+  run: (prompt: string, onOutput: OnOutput) => Promise<string>,
+  onEvent: (e: AskEvent) => void = () => {},
+): Promise<AskResult> {
   const rows: [number, number] = req.rows ? [Math.max(0, req.rows[0]), Math.min(level.height - 1, req.rows[1])] : [0, level.height - 1];
   const before = checkLevel(level, enemies);
   let retry: { previous: string; problems: string[] } | undefined;
   let last: string[] = [];
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    const reply = await run(buildPrompt(level, enemies, req, rows, retry));
+    const prompt = buildPrompt(level, enemies, req, rows, retry);
+    const sent = Date.now();
+    onEvent({ type: "prompt", attempt, chars: prompt.length, prompt });
+    const reply = await run(prompt, (kind, text) => onEvent({ type: kind, attempt, text }));
+    onEvent({ type: "reply", attempt, chars: reply.length, ms: Date.now() - sent, reply });
     const parsed = extractReply(reply);
     if (parsed.message && parsed.terrainText === null && parsed.unitsText === null) return { kind: "message", message: parsed.message };
 
@@ -231,6 +257,7 @@ export async function ask(level: LevelData, enemies: EnemyTypes, req: AskRequest
       }
     }
     last = problems;
+    onEvent({ type: "problems", attempt, problems });
     retry = { previous: reply, problems };
   }
   return { kind: "failed", problems: last, attempts: MAX_ATTEMPTS };
@@ -251,11 +278,17 @@ function onPath(bin: string): boolean {
 
 export const availableBackends = () => BACKENDS.map((b) => ({ ...b, available: onPath(b.id) }));
 
-function exec(cmd: string, args: string[], opts: { cwd: string; signal: AbortSignal; timeoutMs: number }) {
+function exec(cmd: string, args: string[], opts: { cwd: string; signal: AbortSignal; timeoutMs: number; onLine?: (line: string) => void }) {
   return new Promise<{ stdout: string; stderr: string; code: number | null }>((resolve, reject) => {
     const child = spawn(cmd, args, { cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] });
-    let stdout = "", stderr = "";
-    child.stdout.on("data", (d) => (stdout += d));
+    let stdout = "", stderr = "", partial = "";
+    child.stdout.on("data", (d) => {
+      stdout += d;
+      if (!opts.onLine) return;
+      const lines = (partial + d).split("\n");
+      partial = lines.pop()!;
+      for (const line of lines) if (line.trim()) opts.onLine(line);
+    });
     child.stderr.on("data", (d) => (stderr += d));
     const stop = (why: string) => {
       child.kill("SIGTERM");
@@ -275,28 +308,69 @@ function exec(cmd: string, args: string[], opts: { cwd: string; signal: AbortSig
 
 const ANSI = /\x1b\[[0-9;]*m/g;
 const tail = (s: string) => s.replace(ANSI, "").trim().slice(-600);
+const short = (s: string, n = 160) => (s.length > n ? `${s.slice(0, n)}…` : s).replace(/\s+/g, " ");
+
+function parseLine<T>(line: string): T | null {
+  try {
+    return JSON.parse(line) as T;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Runs one prompt through a coding-agent CLI in headless mode and returns its final text.
  * Each runs in an empty temp directory with tools disabled or read-only, so it cannot touch the project.
+ * Claude and Codex print JSON events while they work; those are passed to onOutput as they arrive.
  */
-export async function runAgent(backend: Backend, prompt: string, opts: { model?: string; signal: AbortSignal; timeoutMs?: number }): Promise<string> {
+export async function runAgent(backend: Backend, prompt: string, opts: { model?: string; signal: AbortSignal; timeoutMs?: number; onOutput?: OnOutput }): Promise<string> {
+  const say: OnOutput = opts.onOutput ?? (() => {});
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "commando-ask-"));
   const common = { cwd, signal: opts.signal, timeoutMs: opts.timeoutMs ?? 240_000 };
   try {
     if (backend === "claude") {
-      const args = ["-p", prompt, "--tools", "", "--no-session-persistence", "--output-format", "text", "--setting-sources", "", "--disable-slash-commands"];
+      // stream-json prints one event per line; the text arrives in small deltas, the final answer in the "result" event.
+      const args = ["-p", prompt, "--tools", "", "--no-session-persistence", "--setting-sources", "", "--disable-slash-commands",
+        "--output-format", "stream-json", "--verbose", "--include-partial-messages"];
       if (opts.model) args.push("--model", opts.model);
-      const r = await exec("claude", args, common);
-      if (r.code !== 0) throw new Error(`claude failed (exit ${r.code}): ${tail(r.stderr || r.stdout)}`);
-      return r.stdout;
+      type ClaudeEvent = {
+        type?: string; subtype?: string; model?: string; is_error?: boolean; result?: string; estimated_tokens?: number;
+        event?: { type?: string; delta?: { type?: string; text?: string } };
+      };
+      let result: ClaudeEvent | null = null;
+      const r = await exec("claude", args, {
+        ...common,
+        onLine: (line) => {
+          const ev = parseLine<ClaudeEvent>(line);
+          if (!ev) return;
+          if (ev.type === "system" && ev.subtype === "init") say("activity", `Claude started (model ${ev.model ?? "default"})`);
+          else if (ev.type === "system" && ev.subtype === "thinking_tokens" && ev.estimated_tokens) say("thinking", String(ev.estimated_tokens));
+          else if (ev.type === "stream_event" && ev.event?.delta?.type === "text_delta" && ev.event.delta.text) say("output", ev.event.delta.text);
+          else if (ev.type === "result") result = ev;
+        },
+      });
+      const res = result as ClaudeEvent | null;
+      if (res && !res.is_error && res.subtype === "success" && typeof res.result === "string") return res.result;
+      throw new Error(`claude failed (exit ${r.code}): ${res?.result ? tail(res.result) : tail(r.stderr || r.stdout)}`);
     }
     if (backend === "codex") {
       const out = path.join(cwd, "last-message.txt");
-      const args = ["exec", "--sandbox", "read-only", "--skip-git-repo-check", "--ephemeral", "--ignore-user-config", "-C", cwd, "-o", out];
+      // --json prints one event per line as Codex works (no text deltas); the final message is written to `out`.
+      const args = ["exec", "--sandbox", "read-only", "--skip-git-repo-check", "--ephemeral", "--ignore-user-config", "-C", cwd, "-o", out, "--json"];
       if (opts.model) args.push("-m", opts.model);
       args.push(prompt);
-      const r = await exec("codex", args, common);
+      type CodexEvent = { type?: string; item?: { type?: string; text?: string; command?: string } };
+      const r = await exec("codex", args, {
+        ...common,
+        onLine: (line) => {
+          const ev = parseLine<CodexEvent>(line);
+          const it = ev?.item;
+          if (ev?.type === "turn.started") say("activity", "Codex started");
+          else if (ev?.type === "item.completed" && it?.type === "reasoning" && it.text) say("activity", `thinking: ${short(it.text)}`);
+          else if (ev?.type === "item.started" && it?.type === "command_execution") say("activity", `running: ${short(it.command ?? "")}`);
+          else if (ev?.type === "item.completed" && it?.type === "agent_message") say("activity", "answer written");
+        },
+      });
       if (r.code !== 0 || !fs.existsSync(out)) throw new Error(`codex failed (exit ${r.code}): ${tail(r.stderr || r.stdout)}`);
       return fs.readFileSync(out, "utf8");
     }

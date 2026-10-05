@@ -56,6 +56,16 @@ await test("a rejected reply is retried with the problems and the previous reply
   assert.ok(s.prompts[1].includes("stands on a wall"), "retry prompt should include the previous reply");
 });
 
+await test("progress events: prompt, reply and problems for each attempt, live output passed through", async () => {
+  const onWall = reply(40, 44, (g) => (g[1][5] = "##"), (g) => (g[1][5] = "s1"), "stands on a wall");
+  const good = reply(40, 44, undefined, (g) => (g[2][3] = "s1"));
+  const replies = [onWall, good];
+  const events: string[] = [];
+  let i = 0;
+  await ask(level, enemies, req(), async (_p, onOutput) => (onOutput("activity", "started"), onOutput("output", "SUMMARY"), replies[i++]), (e) => events.push(`${e.type}:${e.attempt}`));
+  assert.deepEqual(events, ["prompt:1", "activity:1", "output:1", "reply:1", "problems:1", "prompt:2", "activity:2", "output:2", "reply:2"]);
+});
+
 await test("a message without a block is passed through", async () => {
   const r = await ask(level, enemies, req(), async () => "AGENT_MESSAGE: a cavalry unit that charges the player needs a new behaviour");
   assert.deepEqual(r, { kind: "message", message: "a cavalry unit that charges the player needs a new behaviour" });

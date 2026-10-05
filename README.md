@@ -43,6 +43,8 @@ The *Ask an agent* section at the top of the editor's Map tab edits the map from
    *Game view* selects the rows currently on screen.
 2. **Ask** (⌘↵): the dev server builds a prompt (rules, legend, what each enemy does, the whole map, your selection, your last few requests)
    and runs your coding-agent CLI headlessly: `claude -p`, `codex exec` or `opencode run`, chosen in the dropdown. You can keep playing while it works.
+   While you wait, the panel shows what is happening: the steps, the exact prompt, how much Claude has thought so far, and the reply
+   as it is written, row by row (Codex reports its steps and sends the reply at the end).
 3. **Review:** the answer is checked (valid codes, a walkable route, units on walkable cells, tank footprints on road, nothing next to the spawn, ...).
    If a check fails the problems go back to the agent for another try, up to three. A passing answer is **previewed on the map** with the changed
    cells outlined; *Hold to see original* peeks at the before. **Accept** applies it as an ordinary undoable edit; then Save as usual. **Reject** drops it.
