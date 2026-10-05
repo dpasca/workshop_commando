@@ -12,7 +12,7 @@ The game is deliberately plain. What matters is the scaffolding that lets you, a
 
 ## How the day works
 
-- **Work alone or with a neighbour,** one AI coding tool per laptop: Claude Code, Codex or OpenCode, whichever you already use.
+- **You need an AI coding tool:** Claude Code, Codex or OpenCode, whichever you already use.
 - **Three exercises, in order.** Each has a goal with a "done when" checklist, and extras if you have time. Nobody is graded.
 - **Build it yourself, or use the finished version.** Your choice, at any time.
   - *Build it yourself:* implement the exercise with your agent.
