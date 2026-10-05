@@ -12,7 +12,7 @@ The game is deliberately plain. What matters is the scaffolding that lets you, a
 
 ## How the day works
 
-- **Pairs, one AI coding tool per pair.** Claude Code, Codex or OpenCode: whichever you already use.
+- **Work alone or with a neighbour,** one AI coding tool per laptop: Claude Code, Codex or OpenCode, whichever you already use.
 - **Three exercises, in order.** Each has a goal with a "done when" checklist, and extras if you have time. Nobody is graded.
 - **Build it yourself, or use the finished version.** Your choice, at any time.
   - *Build it yourself:* implement the exercise with your agent.
@@ -44,4 +44,4 @@ Each branch builds on the previous one, and its `README.md` and `AGENTS.md` desc
 
 ## Showing your level at the end
 
-In the last part of the day, each pair shows its best level on its own laptop, or on the projector. Nothing to copy or send.
+In the last part of the day, everyone shows their best level on their own laptop, or on the projector. Nothing to copy or send.
