@@ -1,4 +1,4 @@
-# 03 · An agent in the editor (45 min)
+# 03 · An agent in the editor (40 min)
 
 **Goal:** the editor asks a coding agent to change the map, and **you stay in control of what is accepted**.
 

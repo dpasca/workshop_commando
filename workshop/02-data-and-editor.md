@@ -1,4 +1,4 @@
-# 02 · Data and an editor (45 min)
+# 02 · Data and an editor (40 min)
 
 **Goal:** the level stops being code. It becomes a file you can edit **while the game runs**, and then a small editor does the editing for you.
 This is the step that turns "a game" into "a game you can shape from the inside", and the step that lets an agent do it later.
