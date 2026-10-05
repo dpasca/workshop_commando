@@ -41,3 +41,9 @@ Participants may build an exercise themselves or switch to its finished version;
   and browser-driven checks. Until `src/main.ts` has run, `window.game` is the `<div id="game">` element instead
   (browsers expose element ids as globals), so check `window.game instanceof Phaser.Game` or wait for it.
 - Run `pnpm typecheck` before handing work back.
+
+## Git ownership and branch names
+
+- Do not add AI co-author trailers, AI signatures, generated-by credits, or session links to commit messages or pull request descriptions. Preserve human author identity and human co-author credits.
+- Use `master` as the default branch. Never create or rename the default branch to `main` unless the user explicitly asks for it. Respect the existing branch when working in an established repository.
+- Do not bypass or remove attribution settings or Git hooks enforcing this policy.

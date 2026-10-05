@@ -58,4 +58,4 @@ Resolve by hand, or ask an agent; it took one 24 seconds.
 
 A second effect · tune values in `src/config.ts` · a boss · make the audio react to what is happening (heartbeat when you are hurt).
 
-Next: [02 Data and an editor](02-data-and-editor.md). *Exercise 1 has no finished version: it is open-ended. If you are behind, the next exercise starts from `main` too; your part A work is a bonus, not a prerequisite.*
+Next: [02 Data and an editor](02-data-and-editor.md). *Exercise 1 has no finished version: it is open-ended. If you are behind, the next exercise starts from `master` too; your part A work is a bonus, not a prerequisite.*
