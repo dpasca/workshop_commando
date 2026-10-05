@@ -19,7 +19,7 @@ pnpm dev
 
 ## 演習
 
-資料は `workshop/` にあります（まず `workshop/README.md` から）。
+資料は `workshop/` にあります（まず `workshop/README.md` から。日本語版は `workshop/ja/`）。
 
 1. **ハードコード**（このブランチ）: レベルは `src/level.ts` 内のテキストグリッドで、挙動はコードで書かれています。機能やエフェクトを追加します。
 2. **データ + エディタ**（完成版は `exercise-2` ブランチ）: レベルと敵の定義を TOML ファイルに移し、レベルエディタとホットリロードを用意します。
@@ -28,3 +28,7 @@ pnpm dev
 ## クレジット
 
 スプライトとタイル: [Kenney](https://kenney.nl) — *Top-down Shooter* および *Top-Down Tanks*、CC0。
+
+## ライセンス
+
+コードと資料は [MIT](LICENSE) ライセンスです。スプライトとタイルは、それぞれの CC0 ライセンスのままです（`public/assets/licenses/`）。
