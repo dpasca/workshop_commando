@@ -82,3 +82,9 @@ Participants may build an exercise themselves or switch to its finished version;
 - Tests: `pnpm test:ask` runs the Ask loop against scripted fake agents (no network). `pnpm try:agent <cli> "<request>" [rows] [model]`
   tries it against a real CLI and prints timing and validity.
 - Run `pnpm typecheck`, `pnpm check:data` and `pnpm test:ask` before handing work back.
+
+## Git ownership and branch names
+
+- Do not add AI co-author trailers, AI signatures, generated-by credits, or session links to commit messages or pull request descriptions. Preserve human author identity and human co-author credits.
+- Use `master` as the default branch. Never choose another default branch name unless the user explicitly asks for it. Respect the existing branch when working in an established repository.
+- Do not bypass or remove attribution settings or Git hooks enforcing this policy.
