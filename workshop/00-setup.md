@@ -3,7 +3,7 @@
 **Goal:** the game runs on your laptop, and your agent can answer.
 
 ```sh
-git clone <repo url> commando && cd commando
+git clone https://github.com/dpasca/workshop_commando.git commando && cd commando
 pnpm install
 node workshop/preflight.mjs      # checks Node, pnpm, git and your agent CLIs, and asks each one to say "OK"
 pnpm dev                         # open http://localhost:5173
