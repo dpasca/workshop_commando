@@ -24,9 +24,9 @@ The game is deliberately plain. What matters is the scaffolding that lets you, a
 | Exercise | Time | |
 |---|---|---|
 | [00 Setup](00-setup.md) | 15 min | clone, install, run, check your agent |
-| [01 Make it yours](01-make-it-yours.md) | 45 min | features and effects, plus audio in a parallel worktree |
-| [02 Data and an editor](02-data-and-editor.md) | 45 min | level and enemies as files, hot reload, a map editor |
-| [03 An agent in the editor](03-agent-in-the-editor.md) | 45 min | the editor asks a coding agent to edit the map |
+| [01 Make it yours](01-make-it-yours.md) | 40 min | features and effects, plus audio in a parallel worktree |
+| [02 Data and an editor](02-data-and-editor.md) | 40 min | level and enemies as files, hot reload, a map editor |
+| [03 An agent in the editor](03-agent-in-the-editor.md) | 40 min | the editor asks a coding agent to edit the map |
 | [Cheat sheet](agent-cheatsheet.md) | | worktrees, headless modes, ports, merge conflicts, rate limits |
 | [Constraint cards](constraints.md) | | optional make-do rules to draw for exercise 1 |
 
