@@ -11,6 +11,7 @@ export interface ClientProposal {
   changed: { terrain: number; units: number };
   warnings: string[];
   attempts: number;
+  message: string | null;
   ms: number;
   backend: string;
 }
@@ -23,7 +24,7 @@ interface HistoryEntry {
   detail?: string;
 }
 
-const MARK: Record<string, string> = { accepted: "✓", rejected: "✗", needs: "⚠", failed: "!", proposed: "…" };
+const MARK: Record<string, string> = { accepted: "✓", rejected: "✗", message: "⚠", failed: "!", proposed: "…" };
 
 // The "Ask an agent" section. The page calls the dev server, which runs a coding agent headlessly with the
 // level in the prompt and sends back a proposal. Nothing is changed until you press Accept, and Accept is
@@ -149,7 +150,14 @@ export class AskPanel {
     peek.addEventListener("pointerdown", () => this.ed.peek(true));
     for (const ev of ["pointerup", "pointerleave"]) peek.addEventListener(ev, () => this.ed.peek(false));
     buttons.append(accept, reject, peek);
-    box.append(text, buttons);
+    box.append(text);
+    if (p.message) {
+      const note = document.createElement("div");
+      note.className = "agent-msg";
+      note.textContent = `Agent's message: ${p.message}`;
+      box.append(note);
+    }
+    box.append(buttons);
     this.result.append(box);
   }
 
@@ -192,7 +200,7 @@ export class AskPanel {
       });
       const body = await res.json();
       if (body.ok) this.ed.setProposal(body as ClientProposal);
-      else if (body.needs) this.say("warn", [`The agent says this needs something the game cannot do yet:`, body.needs, "", "It was added to data/requests.md for a coding session."]);
+      else if (body.message) this.say("warn", ["The agent made no change. Its message:", body.message, "", "Saved to data/agent-messages.md for a coding session."]);
       else this.say("error", ["No usable answer:", ...(body.errors ?? ["unknown error"]), ...(body.attempts ? [`(tried ${body.attempts} times)`] : [])]);
     } catch (e) {
       if ((e as Error).name === "AbortError") this.say("info", ["Cancelled."]);

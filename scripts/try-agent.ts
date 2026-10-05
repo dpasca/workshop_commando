@@ -31,8 +31,9 @@ try {
     const p = result.proposal;
     console.log(`✓ proposal in ${secs}s, ${calls} call(s): ${p.summary}`);
     console.log(`  changed ${p.changed.terrain} terrain + ${p.changed.units} unit cells in rows ${p.rows[0]}-${p.rows[1]}${p.warnings.length ? `; warnings: ${p.warnings.join("; ")}` : ""}`);
-  } else if (result.kind === "needs") {
-    console.log(`⚠ the agent says this needs new code (${secs}s): ${result.needs}`);
+    if (p.message) console.log(`  agent's message: ${p.message}`);
+  } else if (result.kind === "message") {
+    console.log(`⚠ no change; the agent says (${secs}s): ${result.message}`);
   } else {
     console.log(`✗ no usable answer after ${result.attempts} attempts (${secs}s):\n${result.problems.map((p) => `    ${p}`).join("\n")}`);
     process.exitCode = 1;

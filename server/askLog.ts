@@ -4,7 +4,7 @@ import type { HistoryLine } from "./ask";
 
 // What was asked and what the designer did with the answer, kept as JSON lines in data/ask_log.jsonl.
 // The newest few entries for a level go back into the next prompt (the agent itself keeps no memory).
-// Requests the agent could not satisfy ("NEEDS: ...") are appended to data/requests.md for a coding session.
+// Anything the agent flagged ("AGENT_MESSAGE: ...") is appended to data/agent-messages.md for a coding session.
 
 export interface LogEntry {
   id: string;
@@ -14,7 +14,7 @@ export interface LogEntry {
   rows: [number, number] | null;
   backend: string;
   summary: string;
-  outcome: "proposed" | "accepted" | "rejected" | "failed" | "needs";
+  outcome: "proposed" | "accepted" | "rejected" | "failed" | "message";
   detail?: string;
 }
 
@@ -49,16 +49,16 @@ export const recent = (dataDir: string, level: string, limit: number) => readEnt
 /** The entries as the prompt wants them: only ones the designer has reacted to. */
 export function forPrompt(entries: LogEntry[]): HistoryLine[] {
   return entries
-    .filter((e) => e.outcome === "accepted" || e.outcome === "rejected" || e.outcome === "needs")
+    .filter((e) => e.outcome === "accepted" || e.outcome === "rejected" || e.outcome === "message")
     .map((e) => ({
       instruction: e.instruction,
       rows: e.rows,
-      outcome: e.outcome === "accepted" ? "accepted" : e.outcome === "rejected" ? `rejected${e.detail ? ` (${e.detail})` : ""}` : `could not be done (${e.detail ?? "needs a new capability"})`,
+      outcome: e.outcome === "accepted" ? "accepted" : e.outcome === "rejected" ? `rejected${e.detail ? ` (${e.detail})` : ""}` : `no change proposed; you said: ${e.detail ?? "(nothing)"}`,
     }));
 }
 
-export function appendRequest(dataDir: string, level: string, instruction: string, needs: string) {
-  const file = path.join(dataDir, "requests.md");
-  const head = fs.existsSync(file) ? "" : "# Requests the editor's agent could not do\n\nEach line is something the level editor's Ask box was asked for but needs new code (a terrain, an enemy behaviour, ...).\nHand this file to a coding session.\n\n";
-  fs.appendFileSync(file, `${head}- ${new Date().toISOString().slice(0, 16).replace("T", " ")} · level \`${level}\` · asked: "${instruction}" · needs: ${needs}\n`);
+export function appendAgentMessage(dataDir: string, level: string, instruction: string, message: string, proposed: boolean) {
+  const file = path.join(dataDir, "agent-messages.md");
+  const head = fs.existsSync(file) ? "" : "# Messages from the editor's agent\n\nEach line is something the level editor's agent flagged: a request it could not do (it needs new code: a terrain, an enemy behaviour, ...),\nor a concern about a change it proposed.\nHand this file to a coding session.\n\n";
+  fs.appendFileSync(file, `${head}- ${new Date().toISOString().slice(0, 16).replace("T", " ")} · level \`${level}\` · asked: "${instruction}" · ${proposed ? "with a proposal" : "no change proposed"} · ${message}\n`);
 }

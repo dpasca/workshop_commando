@@ -39,7 +39,7 @@ await test("the prompt carries the legend, behaviours, rules, selection, history
   const s = script(reply(40, 44));
   await ask(level, enemies, req({ instruction: "make it nastier", history: [{ instruction: "add cover", rows: [10, 20], outcome: "accepted" }] }), s.run);
   const p = s.prompts[0];
-  for (const needle of ["t1 tank", "covers 2x2", "sb  sandbags", "Only rows 040 to 044", "\"add cover\" (rows 010-020): accepted", "make it nastier", "NEEDS:", "walkable path"]) assert.ok(p.includes(needle), `prompt missing: ${needle}`);
+  for (const needle of ["t1 tank", "covers 2x2", "sb  sandbags", "Only rows 040 to 044", "\"add cover\" (rows 010-020): accepted", "make it nastier", "AGENT_MESSAGE:", "walkable path"]) assert.ok(p.includes(needle), `prompt missing: ${needle}`);
   console.log(`  prompt is ${p.length} characters`);
 });
 
@@ -56,9 +56,15 @@ await test("a rejected reply is retried with the problems and the previous reply
   assert.ok(s.prompts[1].includes("stands on a wall"), "retry prompt should include the previous reply");
 });
 
-await test("NEEDS is passed through", async () => {
-  const r = await ask(level, enemies, req(), async () => "NEEDS: a cavalry unit that charges the player");
-  assert.deepEqual(r, { kind: "needs", needs: "a cavalry unit that charges the player" });
+await test("a message without a block is passed through", async () => {
+  const r = await ask(level, enemies, req(), async () => "AGENT_MESSAGE: a cavalry unit that charges the player needs a new behaviour");
+  assert.deepEqual(r, { kind: "message", message: "a cavalry unit that charges the player needs a new behaviour" });
+});
+
+await test("a message next to a good reply stays with the proposal", async () => {
+  const r = await ask(level, enemies, req(), async () => `${reply(40, 44, undefined, (g) => (g[2][3] = "s1"))}\n**AGENT\\_MESSAGE:** I read "rifleman" as a sniper\n`);
+  assert.equal(r.kind, "proposal");
+  if (r.kind === "proposal") assert.equal(r.proposal.message, 'I read "rifleman" as a sniper');
 });
 
 await test("garbage three times fails with a useful reason", async () => {

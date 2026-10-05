@@ -49,11 +49,13 @@ export interface Proposal {
   changed: { terrain: number; units: number };
   warnings: string[];
   attempts: number;
+  /** What the agent wanted the designer to know about this change, if anything. */
+  message: string | null;
 }
 
 export type AskResult =
   | { kind: "proposal"; proposal: Proposal }
-  | { kind: "needs"; needs: string }
+  | { kind: "message"; message: string }
   | { kind: "failed"; problems: string[]; attempts: number };
 
 export const MAX_ATTEMPTS = 3;
@@ -135,8 +137,10 @@ ${sample(level.units)}
 '''
 \`\`\`
 
-If the request cannot be done with the terrain codes, unit codes and enemy behaviours above (it needs a new kind of terrain, enemy or behaviour), reply with a single line instead and no block:
-NEEDS: <what new capability would be required>
+If something concerns you, add one line outside the block:
+AGENT_MESSAGE: <what the designer should know>
+For example: the request needs a kind of terrain, enemy or behaviour that is not listed above; the request is unclear and you had to guess; or you had to change more than was asked.
+If the request cannot be done at all with the terrain codes, unit codes and enemy behaviours above, reply with only the AGENT_MESSAGE line and no block.
 `;
 }
 
@@ -144,7 +148,7 @@ NEEDS: <what new capability would be required>
 
 export interface Reply {
   summary: string;
-  needs: string | null;
+  message: string | null;
   terrainText: string | null;
   unitsText: string | null;
 }
@@ -154,7 +158,7 @@ export function extractReply(text: string): Reply {
   const grid = (name: string) => text.match(new RegExp(`\\b${name}\\s*=\\s*('''|""")([\\s\\S]*?)\\1`))?.[2] ?? null;
   return {
     summary: grab(/^\s*\**SUMMARY:\**\s*(.+)$/im) ?? "",
-    needs: grab(/^\s*\**NEEDS:\**\s*(.+)$/im),
+    message: grab(/^\s*\**AGENT\\?_MESSAGE:\**\s*(.+)$/im),
     terrainText: grid("terrain"),
     unitsText: grid("units"),
   };
@@ -198,7 +202,7 @@ export async function ask(level: LevelData, enemies: EnemyTypes, req: AskRequest
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const reply = await run(buildPrompt(level, enemies, req, rows, retry));
     const parsed = extractReply(reply);
-    if (parsed.needs && parsed.terrainText === null && parsed.unitsText === null) return { kind: "needs", needs: parsed.needs };
+    if (parsed.message && parsed.terrainText === null && parsed.unitsText === null) return { kind: "message", message: parsed.message };
 
     let problems: string[];
     const result = applyReply(level, enemies, parsed, rows, req.layers);
@@ -221,6 +225,7 @@ export async function ask(level: LevelData, enemies: EnemyTypes, req: AskRequest
             changed: { terrain: diff("terrain"), units: diff("units") },
             warnings: after.warnings.filter((w) => !before.warnings.includes(w)),
             attempts: attempt,
+            message: parsed.message,
           },
         };
       }

@@ -46,8 +46,9 @@ The *Ask an agent* section at the top of the editor's Map tab edits the map from
 3. **Review:** the answer is checked (valid codes, a walkable route, units on walkable cells, tank footprints on road, nothing next to the spawn, ...).
    If a check fails the problems go back to the agent for another try, up to three. A passing answer is **previewed on the map** with the changed
    cells outlined; *Hold to see original* peeks at the before. **Accept** applies it as an ordinary undoable edit; then Save as usual. **Reject** drops it.
-4. **If it can't be done** with the terrain, units and behaviours that exist ("add a helicopter boss"), the agent says so and the request is appended
-   to `data/requests.md`, ready to hand to a coding session.
+4. **The agent can talk back** with an `AGENT_MESSAGE:` line: the request needs something the game can't do ("add a helicopter boss"),
+   it was unclear, or the change goes further than asked. With no proposal, that's all you get; with one, it shows next to it.
+   Every message is appended to `data/agent-messages.md`, ready to hand to a coding session.
 
 The agent is a stateless function here: the page owns the level, the history (`data/ask_log.jsonl`) and the validation. The CLIs run in an empty
 temporary directory with tools off (Claude) or a read-only sandbox (Codex), so all they can do is answer with text.

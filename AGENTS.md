@@ -45,8 +45,9 @@ Participant handouts are in `workshop/` (start with `workshop/README.md`).
   (parser plus level checker; only problems the change *introduced* count) and retries up to 3 times feeding the problems back.
   The CLIs run in an empty temp directory with tools disabled / read-only sandbox, so the agent can only answer with text.
   `server/askLog.ts` keeps `data/ask_log.jsonl` (requests and what the designer did with them; the latest go into the next prompt)
-  and `data/requests.md` (things the agent said need new code: "NEEDS: ..."). Both files are git-ignored.
-  If you are a coding agent asked to work through `data/requests.md`, implement the missing capability (see the recipe for new
+  and `data/agent-messages.md` (anything the agent flagged with "AGENT_MESSAGE: ...": requests that need new code, or concerns
+  about a change it proposed). Both files are git-ignored.
+  If you are a coding agent asked to work through `data/agent-messages.md`, implement the missing capabilities (see the recipe for new
   behaviours below, or add terrain support in `GameScene.ts`), then run `pnpm check:data` and `pnpm test:ask`.
 - `src/entities/Enemy.ts` — one generic enemy class driven by its entry in `enemies.toml`.
   `src/entities/behaviors.ts` — the movement and attack **primitives**. To add a behaviour: write the function, add its name to

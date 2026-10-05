@@ -6,7 +6,7 @@ import { parseEnemies } from "../src/data/enemies";
 import { DataError } from "../src/data/errors";
 import { parseLevel } from "../src/data/level";
 import { ask, availableBackends, runAgent, type AskRequest, type Backend } from "./ask";
-import { appendEntry, appendOutcome, appendRequest, forPrompt, readEntries, recent, type LogEntry } from "./askLog";
+import { appendEntry, appendAgentMessage, appendOutcome, forPrompt, readEntries, recent, type LogEntry } from "./askLog";
 
 // Dev-server plugin: the browser can't write files, so this exposes data/ over a tiny HTTP API and
 // tells the page when a file changes on disk (whoever changed it: the editor, an agent, a text editor).
@@ -89,12 +89,13 @@ export function workshopData(): Plugin {
     const ms = Date.now() - started;
     if (result.kind === "proposal") {
       appendEntry(dataDir, { ...entry, summary: result.proposal.summary, outcome: "proposed" });
+      if (result.proposal.message) appendAgentMessage(dataDir, body.level, instruction, result.proposal.message, true);
       return send(res, 200, { ok: true, id: entry.id, ms, backend: body.backend, ...result.proposal });
     }
-    if (result.kind === "needs") {
-      appendEntry(dataDir, { ...entry, outcome: "needs", detail: result.needs });
-      appendRequest(dataDir, body.level, instruction, result.needs);
-      return send(res, 200, { ok: false, id: entry.id, ms, needs: result.needs });
+    if (result.kind === "message") {
+      appendEntry(dataDir, { ...entry, outcome: "message", detail: result.message });
+      appendAgentMessage(dataDir, body.level, instruction, result.message, false);
+      return send(res, 200, { ok: false, id: entry.id, ms, message: result.message });
     }
     appendEntry(dataDir, { ...entry, outcome: "failed", detail: result.problems.join("; ").slice(0, 300) });
     return send(res, 200, { ok: false, id: entry.id, ms, errors: result.problems, attempts: result.attempts });
