@@ -1,4 +1,4 @@
-# 01 · Make it yours (45 min)
+# 01 · Make it yours (40 min)
 
 **Goal:** change the game with your agent, feel what the edit-rebuild-reload cycle costs, and run **two agents in parallel** without them stepping on each other.
 
